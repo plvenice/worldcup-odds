@@ -57,6 +57,16 @@ export default function Header({ forecast, loading, lastFetched }: Props) {
                 <span style={{ color: "var(--muted)" }}>{forecast.results_source}</span>
               </span>
             )}
+            {forecast?.blend && forecast.blend.n_matches > 0 && (
+              <span
+                title={`Betting market blended into ${forecast.blend.n_matches} upcoming match(es) at ${Math.round(
+                  forecast.blend.weight * 100
+                )}% weight`}
+                style={{ color: "var(--gold)" }}
+              >
+                · market ×{forecast.blend.n_matches}
+              </span>
+            )}
           </div>
         </div>
 

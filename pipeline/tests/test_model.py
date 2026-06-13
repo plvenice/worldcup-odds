@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -56,6 +57,39 @@ def test_availability_penalty():
     pen, names = factors.availability_penalty("FRA", overrides,
                                               datetime.date(2026, 6, 12))
     assert pen == 45 and names == ["X"]   # Y returned June 1
+
+
+def test_blend_outcome():
+    model = (0.5, 0.3, 0.2)
+    market = (0.3, 0.3, 0.4)
+    b = mm.blend_outcome(model, market, 0.65)
+    assert abs(sum(b) - 1.0) < 1e-9
+    # 0.65 weight on market pulls toward market
+    assert b[0] < model[0] and b[2] > model[2]
+    # weight 0 returns model; weight 1 returns market
+    assert mm.blend_outcome(model, market, 0.0) == pytest.approx(model)
+    assert mm.blend_outcome(model, market, 1.0) == pytest.approx(market)
+
+
+def test_reweight_to_outcome_matches_target():
+    lh, la = mm.lambdas(150.0)
+    m = mm.score_matrix(float(lh), float(la))
+    target = (0.55, 0.25, 0.20)
+    m2 = mm.reweight_to_outcome(m, target)
+    assert abs(m2.sum() - 1.0) < 1e-9
+    H = np.tril(m2, -1).sum()
+    D = np.trace(m2)
+    A = np.triu(m2, 1).sum()
+    assert H == pytest.approx(0.55, abs=1e-6)
+    assert D == pytest.approx(0.25, abs=1e-6)
+    assert A == pytest.approx(0.20, abs=1e-6)
+
+
+def test_devig_three():
+    from wc26 import odds
+    ph, pd, pa = odds._devig_three(2.0, 3.5, 4.0)
+    assert abs(ph + pd + pa - 1.0) < 1e-9
+    assert ph > pa  # lower odds -> higher prob
 
 
 def test_host_advantage_sign():

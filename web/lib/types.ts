@@ -50,6 +50,9 @@ export interface Match {
   ag: number | null;
   // Only on unplayed matches
   probs?: { home: number; draw: number; away: number };
+  // present when the match is priced by the market (blended into probs)
+  model_probs?: { home: number; draw: number; away: number };
+  market_probs?: { home: number; draw: number; away: number };
   attribution?: {
     home: Record<string, string | number>;
     away: Record<string, string | number>;
@@ -107,6 +110,12 @@ export interface MarketData {
   implied: Record<string, number>;
 }
 
+export interface BlendInfo {
+  n_matches: number;
+  weight: number;
+  fetched_at: string | null;
+}
+
 export interface Forecast {
   generated_at: string;
   nsims: number;
@@ -116,6 +125,7 @@ export interface Forecast {
   matches: Match[];
   bracket: Bracket;
   market: MarketData | null;
+  blend?: BlendInfo;
 }
 
 export interface HistoryRow {

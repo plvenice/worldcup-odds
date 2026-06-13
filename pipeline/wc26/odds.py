@@ -14,7 +14,15 @@ import requests
 from . import data
 
 STATE = data.ROOT / "out" / "odds_state.json"
-DAILY_CAP = 2
+OUTRIGHT_DAILY_CAP = 2
+H2H_DAILY_CAP = 3
+
+# Weight on the betting market when blending market match odds with the
+# (calibrated) model. Markets reliably beat structural models on match
+# outcomes, so we lean market. Not backtested against historical odds (we
+# couldn't source 2018/2022 closing lines for free) — a principled default
+# in the 0.6–0.7 range that practice supports; tune here if needed.
+MARKET_BLEND_WEIGHT = 0.65
 
 NAME_TO_ID = {
     "mexico": "MEX", "south africa": "RSA", "south korea": "KOR",
@@ -35,25 +43,37 @@ NAME_TO_ID = {
 }
 
 
-def _budget_ok():
+def _load_state():
     today = datetime.now(timezone.utc).date().isoformat()
-    state = {"date": today, "calls": 0}
+    state = {"date": today}
     if STATE.exists():
         try:
             state = json.loads(STATE.read_text(encoding="utf-8"))
         except Exception:
             pass
     if state.get("date") != today:
-        state = {"date": today, "calls": 0}
-    if state["calls"] >= DAILY_CAP:
+        state = {"date": today}
+    return state, today
+
+
+def _budget_ok(kind, cap):
+    state, today = _load_state()
+    if state.get(kind, 0) >= cap:
         return False, state
     return True, state
 
 
-def _budget_spend(state):
-    state["calls"] = state.get("calls", 0) + 1
+def _budget_spend(state, kind):
+    state[kind] = state.get(kind, 0) + 1
     STATE.parent.mkdir(exist_ok=True)
     STATE.write_text(json.dumps(state), encoding="utf-8")
+
+
+def _devig_three(home, draw, away):
+    """Decimal odds for the three match outcomes -> vig-stripped probs."""
+    raw = [1.0 / home, 1.0 / draw, 1.0 / away]
+    s = sum(raw)
+    return tuple(x / s for x in raw)
 
 
 def fetch_outrights():
@@ -62,7 +82,7 @@ def fetch_outrights():
     key = os.environ.get("ODDS_API_KEY")
     if not key:
         return None
-    ok, state = _budget_ok()
+    ok, state = _budget_ok("outright", OUTRIGHT_DAILY_CAP)
     if not ok:
         return None
     try:
@@ -71,7 +91,7 @@ def fetch_outrights():
             params={"apiKey": key, "regions": "us,eu", "markets": "outrights",
                     "oddsFormat": "decimal"},
             timeout=20)
-        _budget_spend(state)
+        _budget_spend(state, "outright")
         r.raise_for_status()
         events = r.json()
         if not events:
@@ -92,5 +112,69 @@ def fetch_outrights():
         implied = {t: p / total for t, p in raw.items()}
         return {"fetched_at": datetime.now(timezone.utc).isoformat(),
                 "implied": implied}
+    except Exception:
+        return None
+
+
+def _median(xs):
+    s = sorted(xs)
+    return s[len(s) // 2]
+
+
+def fetch_h2h():
+    """Per-match vig-stripped market probabilities for upcoming WC matches.
+
+    Returns {"fetched_at", "matches": [{home, away, ph, pd, pa}, ...]} or None.
+    home/away are FIFA codes oriented as the bookmaker's home/away. Uses one
+    sharp region (eu) and a median across books. Bookmakers only price imminent
+    matches, so this naturally covers the near term and is empty otherwise.
+    """
+    key = os.environ.get("ODDS_API_KEY")
+    if not key:
+        return None
+    ok, state = _budget_ok("h2h", H2H_DAILY_CAP)
+    if not ok:
+        return None
+    try:
+        r = requests.get(
+            "https://api.the-odds-api.com/v4/sports/soccer_fifa_world_cup/odds",
+            params={"apiKey": key, "regions": "eu", "markets": "h2h",
+                    "oddsFormat": "decimal"},
+            timeout=20)
+        _budget_spend(state, "h2h")
+        r.raise_for_status()
+        events = r.json() or []
+        out = []
+        for ev in events:
+            hid = NAME_TO_ID.get(ev.get("home_team", "").strip().lower())
+            aid = NAME_TO_ID.get(ev.get("away_team", "").strip().lower())
+            if not hid or not aid:
+                continue
+            home_o, draw_o, away_o = [], [], []
+            for bm in ev.get("bookmakers", []):
+                for mk in bm.get("markets", []):
+                    if mk.get("key") != "h2h":
+                        continue
+                    price = {}
+                    for oc in mk.get("outcomes", []):
+                        nm = oc["name"].strip().lower()
+                        if nm == "draw":
+                            price["draw"] = float(oc["price"])
+                        elif NAME_TO_ID.get(nm) == hid:
+                            price["home"] = float(oc["price"])
+                        elif NAME_TO_ID.get(nm) == aid:
+                            price["away"] = float(oc["price"])
+                    if len(price) == 3:
+                        home_o.append(price["home"])
+                        draw_o.append(price["draw"])
+                        away_o.append(price["away"])
+            if not home_o:
+                continue
+            ph, pd, pa = _devig_three(_median(home_o), _median(draw_o), _median(away_o))
+            out.append({"home": hid, "away": aid,
+                        "ph": round(ph, 4), "pd": round(pd, 4), "pa": round(pa, 4)})
+        if not out:
+            return None
+        return {"fetched_at": datetime.now(timezone.utc).isoformat(), "matches": out}
     except Exception:
         return None

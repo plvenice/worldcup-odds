@@ -75,15 +75,49 @@ function AttributionChips({ attr }: { attr: Record<string, string | number> }) {
   );
 }
 
+function MarketCompare({ m }: { m: Match }) {
+  if (!m.market_probs || !m.model_probs || !m.probs) return null;
+  const Row = ({
+    label,
+    p,
+    bold,
+  }: {
+    label: string;
+    p: { home: number; draw: number; away: number };
+    bold?: boolean;
+  }) => (
+    <div className="flex tabular" style={{ fontSize: 11, fontWeight: bold ? 600 : 400 }}>
+      <span style={{ width: 56, color: bold ? "var(--gold)" : "var(--muted)" }}>{label}</span>
+      <span style={{ width: 50, color: "var(--green)" }}>{fmtPct(p.home)}</span>
+      <span style={{ width: 50, color: "var(--draw)" }}>{fmtPct(p.draw)}</span>
+      <span style={{ width: 50, color: "var(--blue)" }}>{fmtPct(p.away)}</span>
+    </div>
+  );
+  return (
+    <div style={{ borderBottom: "1px solid var(--border)", paddingBottom: 6, marginBottom: 4 }}>
+      <div className="flex" style={{ fontSize: 9.5, color: "var(--muted)" }}>
+        <span style={{ width: 56 }} />
+        <span style={{ width: 50 }}>Home</span>
+        <span style={{ width: 50 }}>Draw</span>
+        <span style={{ width: 50 }}>Away</span>
+      </div>
+      <Row label="Model" p={m.model_probs} />
+      <Row label="Market" p={m.market_probs} />
+      <Row label="Blended" p={m.probs} bold />
+    </div>
+  );
+}
+
 function LeverageDetail({ match }: { match: Match }) {
-  if (!match.leverage?.length) return null;
+  if (!match.leverage?.length && !match.market_probs) return null;
 
   return (
     <div
       className="mt-2 pt-2 grid grid-cols-1 gap-2 text-xs"
       style={{ borderTop: "1px solid var(--border)" }}
     >
-      {match.leverage.map((lev) => (
+      <MarketCompare m={match} />
+      {(match.leverage ?? []).map((lev) => (
         <div key={lev.team} className="flex flex-col gap-1">
           <div className="flex items-center gap-1.5 font-semibold" style={{ color: "var(--text)" }}>
             <Flag id={lev.team} h={12} /> {getName(lev.team)}
@@ -232,6 +266,22 @@ export default function LeverageBoard({ matches }: Props) {
                     <span style={{ color: "var(--muted)", fontWeight: 400 }}>vs</span>
                     <Flag id={m.away} h={14} />
                     <span style={{ color: "var(--text)" }}>{getName(m.away)}</span>
+                    {m.market_probs && (
+                      <span
+                        title="Betting market blended into these odds"
+                        style={{
+                          fontSize: 9,
+                          fontWeight: 700,
+                          color: "var(--gold)",
+                          border: "1px solid var(--gold)",
+                          borderRadius: 3,
+                          padding: "0 4px",
+                          letterSpacing: "0.06em",
+                        }}
+                      >
+                        MKT
+                      </span>
+                    )}
                   </div>
 
                   {hasProbs && (

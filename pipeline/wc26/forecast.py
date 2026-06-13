@@ -10,8 +10,8 @@ import numpy as np
 from datetime import date, datetime, timezone
 from pathlib import Path
 
-from . import data, factors, wiki, weather
-from .matchmodel import elo_update, outcome_probs
+from . import data, factors, wiki, weather, odds
+from .matchmodel import elo_update, outcome_probs, blend_outcome
 from . import standings as st
 from .mc import simulate
 
@@ -19,7 +19,7 @@ OUT = data.ROOT / "out"
 WEATHER_LOOKAHEAD_DAYS = 8
 
 
-def build_state(nsims_note=None, fetch_weather=True):
+def build_state(nsims_note=None, fetch_weather=True, h2h=None):
     by_id, ids = data.teams()
     venues = data.venues()
     groups = data.groups()
@@ -76,6 +76,30 @@ def build_state(nsims_note=None, fetch_weather=True):
         fx["total_factor"] = total_factor
         attributions[fx["id"]] = att
 
+    # --- market blend: fold bookmaker match odds into each priced fixture ---
+    market_by_pair = {}
+    if h2h:
+        for m in h2h.get("matches", []):
+            market_by_pair[frozenset((m["home"], m["away"]))] = m
+    n_blended = 0
+    for fx in fixtures:
+        if fx["played"]:
+            continue
+        model = outcome_probs(fx["dr"], fx.get("total_factor", 1.0))
+        fx["model_probs"] = [round(x, 4) for x in model]
+        mp = market_by_pair.get(frozenset((fx["home"], fx["away"])))
+        if not mp:
+            continue
+        # orient market to this fixture's home/away
+        if mp["home"] == fx["home"]:
+            market = (mp["ph"], mp["pd"], mp["pa"])
+        else:
+            market = (mp["pa"], mp["pd"], mp["ph"])
+        blend = blend_outcome(model, market, odds.MARKET_BLEND_WEIGHT)
+        fx["market_probs"] = [round(x, 4) for x in market]
+        fx["blend_probs"] = [round(x, 4) for x in blend]
+        n_blended += 1
+
     state = {
         "ids": ids,
         "ratings": np.array([elo[t] for t in ids]),
@@ -87,6 +111,7 @@ def build_state(nsims_note=None, fetch_weather=True):
         "elo": elo,
         "source": source,
         "attributions": attributions,
+        "n_blended": n_blended,
     }
     return state
 
@@ -136,8 +161,16 @@ def aggregate(state, res, nsims):
         rec = {k: fx.get(k) for k in
                ("id", "group", "home", "away", "date", "venue", "played", "hg", "ag")}
         if not fx["played"]:
-            ph, pd, pa = outcome_probs(fx["dr"], fx["total_factor"])
-            rec["probs"] = {"home": round(ph, 4), "draw": round(pd, 4), "away": round(pa, 4)}
+            # headline probs = blended (market + model) when the match is priced,
+            # else the calibrated model
+            eff = fx.get("blend_probs") or fx.get("model_probs") \
+                or [round(x, 4) for x in outcome_probs(fx["dr"], fx["total_factor"])]
+            rec["probs"] = {"home": eff[0], "draw": eff[1], "away": eff[2]}
+            if fx.get("market_probs"):
+                mo = fx["model_probs"]
+                mk = fx["market_probs"]
+                rec["model_probs"] = {"home": mo[0], "draw": mo[1], "away": mo[2]}
+                rec["market_probs"] = {"home": mk[0], "draw": mk[1], "away": mk[2]}
             rec["attribution"] = state["attributions"].get(fx["id"], {})
             out = res.fixture_outcome[fx["id"]]
             lev = []
@@ -200,15 +233,22 @@ def aggregate(state, res, nsims):
 
 
 def run(nsims=50000, seed=None, fetch_weather=True):
-    from . import odds
+    OUT.mkdir(exist_ok=True)
 
-    state = build_state(fetch_weather=fetch_weather)
+    # market match odds (h2h): fresh pull if budget allows, else last snapshot
+    # (carried on the data branch across runs). Feeds the blend in build_state.
+    h2h = odds.fetch_h2h()
+    h2h_file = OUT / "market_h2h.json"
+    if h2h:
+        h2h_file.write_text(json.dumps(h2h), encoding="utf-8")
+    elif h2h_file.exists():
+        h2h = json.loads(h2h_file.read_text(encoding="utf-8"))
+
+    state = build_state(fetch_weather=fetch_weather, h2h=h2h)
     res = simulate(state, nsims=nsims, seed=seed)
     fc = aggregate(state, res, nsims)
 
-    OUT.mkdir(exist_ok=True)
-    # market: fresh pull if budget allows, else last snapshot (carried on the
-    # data branch across runs)
+    # outright title market (display line on the title race chart)
     market = odds.fetch_outrights()
     mfile = OUT / "market.json"
     if market:
@@ -216,6 +256,11 @@ def run(nsims=50000, seed=None, fetch_weather=True):
     elif mfile.exists():
         market = json.loads(mfile.read_text(encoding="utf-8"))
     fc["market"] = market
+    fc["blend"] = {
+        "n_matches": state.get("n_blended", 0),
+        "weight": odds.MARKET_BLEND_WEIGHT,
+        "fetched_at": h2h.get("fetched_at") if h2h else None,
+    }
     with open(OUT / "forecast.json", "w", encoding="utf-8") as f:
         json.dump(fc, f, indent=1)
 

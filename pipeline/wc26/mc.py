@@ -17,7 +17,7 @@ from datetime import date
 
 from . import bracket as bracket_mod
 from . import factors
-from .matchmodel import score_matrix, lambdas, advance_prob_vec
+from .matchmodel import score_matrix, lambdas, advance_prob_vec, reweight_to_outcome
 
 JITTER = 1e-6
 
@@ -45,6 +45,11 @@ def sample_remaining_fixtures(fixtures, nsims, rng):
             continue
         lh, la = lambdas(fx["dr"], fx["total_factor"])
         m = score_matrix(float(lh), float(la))
+        # if the match is priced, bend the scoreline distribution so its W/D/L
+        # matches the blended (market + model) outcome — the blend then flows
+        # into group tiebreakers and knockout sampling.
+        if fx.get("blend_probs"):
+            m = reweight_to_outcome(m, fx["blend_probs"])
         flat = m.ravel()
         cum = np.cumsum(flat)
         u = rng.random(nsims)

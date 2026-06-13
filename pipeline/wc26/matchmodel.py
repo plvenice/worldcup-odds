@@ -104,6 +104,38 @@ def advance_prob_vec(dr_array, hot=False):
     return np.interp(dr_array, _GRID_DR, table)
 
 
+def reweight_to_outcome(m, target):
+    """Scale a score matrix so its Home/Draw/Away marginals equal `target`
+    (ph, pd, pa), preserving the within-region scoreline shape. Lets a blended
+    W/D/L (model + market) propagate coherently into the Monte Carlo, which
+    needs full scorelines for goal-difference tiebreakers."""
+    ph, pd, pa = target
+    n = m.shape[0]
+    out = m.copy()
+    il = np.tril_indices(n, -1)
+    iu = np.triu_indices(n, 1)
+    idg = np.diag_indices(n)
+    H = m[il].sum()
+    D = m[idg].sum()
+    A = m[iu].sum()
+    if H > 0:
+        out[il] *= ph / H
+    if D > 0:
+        out[idg] *= pd / D
+    if A > 0:
+        out[iu] *= pa / A
+    s = out.sum()
+    return out / s if s > 0 else m
+
+
+def blend_outcome(model_probs, market_probs, w_market):
+    """Linear blend in probability space, renormalized. w_market in [0,1]."""
+    b = tuple(w_market * mk + (1 - w_market) * mo
+              for mo, mk in zip(model_probs, market_probs))
+    s = sum(b)
+    return tuple(x / s for x in b) if s > 0 else model_probs
+
+
 def elo_update(elo_a, elo_b, goals_a, goals_b, dr_extra=0.0, k=60.0):
     """World Football Elo update for team A. dr_extra = situational Elo edge
     for A (host advantage etc.) included in expectation but not stored rating."""
