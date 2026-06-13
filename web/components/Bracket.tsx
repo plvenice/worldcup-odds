@@ -8,6 +8,7 @@ import type {
   BracketR32Match,
   BracketLaterMatch,
   BracketFinal,
+  BracketSlot,
 } from "@/lib/types";
 import { Flag, getName } from "@/lib/flags";
 
@@ -16,124 +17,168 @@ interface Props {
 }
 
 // Layout constants (px)
-const NODE_W = 170;
-const NODE_H = 42;
-const COL_W = 200;
-const ROW_H = 46;
-const PAD_TOP = 30;
+const SLOT_W = 148;       // width of slot leaf nodes (col 0)
+const SLOT_H = 54;        // min-height of slot nodes
+const MATCH_W = 162;      // width of match winner nodes (cols 1–5)
+const MATCH_H = 72;       // min-height of match nodes (3 teams)
+const SLOT_ROW_H = 40;    // vertical pitch between slot leaves
+const COL_GAP = 28;       // horizontal gap between column edges
+const PAD_TOP = 26;       // space for column headers
 const PAD_LEFT = 4;
 
-type Round = "r32" | "r16" | "qf" | "sf" | "final";
-const ROUND_ORDER: Round[] = ["r32", "r16", "qf", "sf", "final"];
-const ROUND_LABEL: Record<Round, string> = {
-  r32: "Round of 32",
-  r16: "Round of 16",
-  qf: "Quarterfinals",
-  sf: "Semifinals",
+type ColRound = "slot" | "r32" | "r16" | "qf" | "sf" | "final";
+const COL_ROUNDS: ColRound[] = ["slot", "r32", "r16", "qf", "sf", "final"];
+const COL_LABELS: Record<ColRound, string> = {
+  slot: "Slots",
+  r32: "Rd. of 32",
+  r16: "Rd. of 16",
+  qf: "Quarters",
+  sf: "Semis",
   final: "Final",
 };
 
-interface Node {
-  match: number;
-  round: Round;
+function colX(col: number): number {
+  // col 0 = slots (SLOT_W wide); col 1+ = match nodes (MATCH_W wide)
+  if (col === 0) return PAD_LEFT;
+  return PAD_LEFT + SLOT_W + COL_GAP + (col - 1) * (MATCH_W + COL_GAP);
+}
+function colW(col: number): number {
+  return col === 0 ? SLOT_W : MATCH_W;
+}
+
+function slotDesc(s: BracketSlot): string {
+  if (s.type === "W") return `1st · ${s.group}`;
+  if (s.type === "R") return `2nd · ${s.group}`;
+  // "T" = third place
+  return `3rd · ${(s.allowed ?? []).join("")}`;
+}
+
+type NodeId = string;
+
+interface BNode {
+  id: NodeId;
+  round: ColRound;
   col: number;
-  date?: string;
-  winner: TeamDist[];
-  feeders: number[]; // child match numbers (empty for r32)
+  dist: TeamDist[];
+  feeders: NodeId[];
   x: number;
-  y: number; // top-left of node box
+  y: number;
+  w: number;
+  h: number;
+  label?: string; // slot label ("1st · A", "2nd · B", "3rd · ABCD")
 }
 
 export default function BracketView({ forecast }: Props) {
   const { bracket } = forecast;
   const [hovered, setHovered] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState<number | null>(null);
+  const [expanded, setExpanded] = useState<NodeId | null>(null);
 
-  const { nodes, height, width } = useMemo(() => {
-    const byMatch = new Map<number, Node>();
+  const { nodes, totalW, totalH } = useMemo(() => {
+    const byId = new Map<NodeId, BNode>();
+    const add = (n: BNode) => byId.set(n.id, n);
 
-    const add = (
-      match: number,
-      round: Round,
-      col: number,
-      winner: TeamDist[],
-      feeders: number[],
-      date?: string
-    ) => {
-      byMatch.set(match, { match, round, col, winner, feeders, date, x: 0, y: 0 });
-    };
+    // --- Col 0: 32 slot leaf nodes (home + away for each R32 match) ---
+    bracket.r32.forEach((m: BracketR32Match) => {
+      add({
+        id: `s-${m.match}-h`, round: "slot", col: 0,
+        dist: m.home_dist, feeders: [],
+        x: 0, y: 0, w: SLOT_W, h: SLOT_H,
+        label: slotDesc(m.home_slot),
+      });
+      add({
+        id: `s-${m.match}-a`, round: "slot", col: 0,
+        dist: m.away_dist, feeders: [],
+        x: 0, y: 0, w: SLOT_W, h: SLOT_H,
+        label: slotDesc(m.away_slot),
+      });
+    });
 
-    bracket.r32.forEach((m: BracketR32Match) =>
-      add(m.match, "r32", 0, m.winner_dist, [], m.date)
-    );
-    (["r16", "qf", "sf"] as const).forEach((rnd, i) =>
-      (bracket[rnd] as BracketLaterMatch[]).forEach((m) =>
-        add(m.match, rnd, i + 1, m.winner_dist, m.feeders ?? [], m.date)
-      )
-    );
+    // --- Col 1: R32 match winner nodes ---
+    bracket.r32.forEach((m: BracketR32Match) => {
+      add({
+        id: `m-${m.match}`, round: "r32", col: 1,
+        dist: m.winner_dist,
+        feeders: [`s-${m.match}-h`, `s-${m.match}-a`],
+        x: 0, y: 0, w: MATCH_W, h: MATCH_H,
+      });
+    });
+
+    // --- Cols 2–4: R16, QF, SF ---
+    (["r16", "qf", "sf"] as const).forEach((rnd, ci) => {
+      (bracket[rnd] as BracketLaterMatch[]).forEach((m) => {
+        add({
+          id: `m-${m.match}`, round: rnd, col: ci + 2,
+          dist: m.winner_dist,
+          feeders: (m.feeders ?? []).map((f) => `m-${f}`),
+          x: 0, y: 0, w: MATCH_W, h: MATCH_H,
+        });
+      });
+    });
+
+    // --- Col 5: Final ---
     const fin = bracket.final as BracketFinal;
-    add(fin.match, "final", 4, fin.winner_dist, [101, 102], fin.date);
+    const sfIds = (bracket.sf as BracketLaterMatch[]).map((m) => `m-${m.match}`);
+    add({
+      id: `m-${fin.match}`, round: "final", col: 5,
+      dist: fin.winner_dist,
+      feeders: sfIds,
+      x: 0, y: 0, w: MATCH_W, h: MATCH_H,
+    });
 
-    // Order the R32 leaves by a depth-first walk from the final, so each
-    // match's two feeders sit adjacent — this produces the classic bracket shape.
-    const leaves: number[] = [];
-    const walk = (match: number) => {
-      const n = byMatch.get(match);
+    // Depth-first walk from final → collect slot leaves in bracket order
+    const orderedSlots: NodeId[] = [];
+    const walk = (id: NodeId) => {
+      const n = byId.get(id);
       if (!n) return;
-      if (n.feeders.length === 0) {
-        leaves.push(match);
-        return;
-      }
+      if (n.feeders.length === 0) { orderedSlots.push(id); return; }
       n.feeders.forEach(walk);
     };
-    walk(fin.match);
+    walk(`m-${fin.match}`);
 
-    // Assign y: leaves evenly spaced; internal nodes = midpoint of feeders.
-    const leafY = new Map<number, number>();
-    leaves.forEach((m, i) => leafY.set(m, PAD_TOP + i * ROW_H));
+    // Assign y to leaves
+    orderedSlots.forEach((id, i) => {
+      byId.get(id)!.y = PAD_TOP + i * SLOT_ROW_H;
+    });
 
-    const yOf = (match: number): number => {
-      const n = byMatch.get(match)!;
-      if (n.feeders.length === 0) return leafY.get(match)!;
+    // Propagate y to internal nodes (centroid of feeder midpoints)
+    const yOf = (id: NodeId): number => {
+      const n = byId.get(id)!;
+      if (n.feeders.length === 0) return n.y + n.h / 2;
       const ys = n.feeders.map(yOf);
       return ys.reduce((a, b) => a + b, 0) / ys.length;
     };
-
-    byMatch.forEach((n) => {
-      n.y = yOf(n.match);
-      n.x = PAD_LEFT + n.col * COL_W;
+    byId.forEach((n) => {
+      if (n.feeders.length > 0) n.y = yOf(n.id) - n.h / 2;
+      n.x = colX(n.col);
     });
 
-    const h = PAD_TOP + leaves.length * ROW_H + 8;
-    const w = PAD_LEFT + 5 * COL_W;
-    return { nodes: [...byMatch.values()], height: h, width: w };
+    const w = colX(5) + MATCH_W + 4;
+    const lastSlot = byId.get(orderedSlots[orderedSlots.length - 1]);
+    const h = (lastSlot ? lastSlot.y + lastSlot.h : 0) + 12;
+
+    return { nodes: [...byId.values()], totalW: w, totalH: h };
   }, [bracket]);
 
-  const nodeByMatch = useMemo(
-    () => new Map(nodes.map((n) => [n.match, n])),
-    [nodes]
-  );
+  const byId = useMemo(() => new Map(nodes.map((n) => [n.id, n])), [nodes]);
 
-  const favorite = (n: Node) => n.winner[0]?.team;
-  const onPath = (n: Node) => hovered != null && favorite(n) === hovered;
+  // Hover: any node containing the hovered team is "on-path"
+  const onPath = (n: BNode) =>
+    hovered != null && n.dist.some((d) => d.team === hovered);
 
-  // Connector paths: from each feeder's right edge to the child's left edge.
-  const connectors: { d: string; lit: boolean }[] = [];
-  for (const n of nodes) {
-    for (const f of n.feeders) {
-      const child = nodeByMatch.get(f);
-      if (!child) continue;
-      const x1 = child.x + NODE_W;
-      const y1 = child.y + NODE_H / 2;
+  // Connector paths: feeder right-edge → parent left-edge
+  const connectors = nodes.flatMap((n) =>
+    n.feeders.flatMap((fId) => {
+      const child = byId.get(fId);
+      if (!child) return [];
+      const x1 = child.x + child.w;
+      const y1 = child.y + child.h / 2;
       const x2 = n.x;
-      const y2 = n.y + NODE_H / 2;
+      const y2 = n.y + n.h / 2;
       const midX = (x1 + x2) / 2;
-      connectors.push({
-        d: `M ${x1} ${y1} H ${midX} V ${y2} H ${x2} ${y2}`,
-        lit: hovered != null && onPath(n) && onPath(child),
-      });
-    }
-  }
+      const isLit = hovered != null && onPath(n) && onPath(child);
+      return [{ d: `M ${x1} ${y1} H ${midX} V ${y2} H ${x2}`, isLit, id: `${fId}->${n.id}` }];
+    })
+  );
 
   return (
     <section>
@@ -144,146 +189,143 @@ export default function BracketView({ forecast }: Props) {
         Bracket
       </h2>
       <p className="text-xs mb-3" style={{ color: "var(--muted)" }}>
-        Each slot shows the favorite to reach it. Hover a team to trace its
-        projected path; tap a match for the full picture. Scroll to pan.
+        Each slot shows who is projected to fill it. Hover any node to trace that team through the draw; click to expand odds.
       </p>
 
-      <div className="overflow-auto pb-3" style={{ maxWidth: "100%" }}>
-        <div style={{ position: "relative", width, height, minWidth: width }}>
-          {/* round headers */}
-          {ROUND_ORDER.map((r, i) => (
+      <div className="overflow-auto pb-3">
+        <div style={{ position: "relative", width: totalW, height: totalH, minWidth: totalW }}>
+          {/* Column headers */}
+          {COL_ROUNDS.map((r, i) => (
             <div
               key={r}
               className="font-heading font-bold text-xs uppercase tracking-widest"
               style={{
                 position: "absolute",
-                left: PAD_LEFT + i * COL_W,
+                left: colX(i),
                 top: 0,
-                width: NODE_W,
+                width: colW(i),
                 textAlign: "center",
                 color: r === "final" ? "var(--gold)" : "var(--muted)",
               }}
             >
-              {ROUND_LABEL[r]}
+              {COL_LABELS[r]}
             </div>
           ))}
 
-          {/* connectors */}
+          {/* Connectors */}
           <svg
-            width={width}
-            height={height}
+            width={totalW}
+            height={totalH}
             style={{ position: "absolute", left: 0, top: 0, pointerEvents: "none" }}
           >
-            {connectors.map((c, i) => (
+            {connectors.map((c) => (
               <path
-                key={i}
+                key={c.id}
                 d={c.d}
                 fill="none"
-                stroke={c.lit ? "var(--gold)" : "var(--border)"}
-                strokeWidth={c.lit ? 2 : 1}
-                opacity={hovered != null && !c.lit ? 0.35 : 1}
+                stroke={c.isLit ? "var(--gold)" : "var(--border)"}
+                strokeWidth={c.isLit ? 2 : 1}
+                opacity={hovered != null && !c.isLit ? 0.18 : 0.85}
               />
             ))}
           </svg>
 
-          {/* nodes */}
+          {/* Nodes */}
           {nodes.map((n) => {
-            const fav = n.winner[0];
-            const second = n.winner[1];
+            const isSlot = n.round === "slot";
             const isFinal = n.round === "final";
-            const lit = onPath(n);
-            const dim = hovered != null && !lit;
-            const isOpen = expanded === n.match;
+            const isLit = onPath(n);
+            const isDim = hovered != null && !isLit;
+            const isOpen = expanded === n.id;
+            const showN = isOpen ? 8 : isSlot ? 2 : 3;
+
             return (
               <div
-                key={n.match}
-                onClick={() => setExpanded(isOpen ? null : n.match)}
+                key={n.id}
+                onClick={() => setExpanded(isOpen ? null : n.id)}
+                onMouseEnter={() => setHovered(n.dist[0]?.team ?? null)}
+                onMouseLeave={() => setHovered(null)}
                 style={{
                   position: "absolute",
                   left: n.x,
                   top: n.y,
-                  width: NODE_W,
-                  minHeight: NODE_H,
-                  background: isFinal ? "rgba(245,195,66,0.08)" : "var(--panel)",
+                  width: n.w,
+                  minHeight: n.h,
+                  background: isFinal ? "rgba(245,195,66,0.07)" : "var(--panel)",
                   border: `1px solid ${
-                    lit ? "var(--gold)" : isFinal ? "var(--gold)" : "var(--border)"
+                    isLit
+                      ? "var(--gold)"
+                      : isFinal
+                      ? "rgba(245,195,66,0.45)"
+                      : "var(--border)"
                   }`,
-                  borderRadius: 7,
-                  padding: "4px 8px",
+                  borderRadius: isSlot ? 5 : 7,
+                  padding: isSlot ? "3px 7px 4px" : "5px 9px",
                   cursor: "pointer",
-                  opacity: dim ? 0.4 : 1,
-                  transition: "opacity .15s, border-color .15s",
+                  opacity: isDim ? 0.28 : 1,
+                  transition: "opacity .12s, border-color .12s",
                   zIndex: isOpen ? 20 : 1,
                   boxShadow: isOpen ? "0 6px 20px rgba(0,0,0,0.5)" : undefined,
                 }}
               >
-                {fav ? (
+                {/* Slot label */}
+                {isSlot && n.label && (
                   <div
-                    className="flex items-center gap-1.5"
-                    onMouseEnter={() => setHovered(fav.team)}
-                    onMouseLeave={() => setHovered(null)}
+                    style={{
+                      color: "var(--muted)",
+                      fontSize: 8.5,
+                      fontWeight: 700,
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                      marginBottom: 2,
+                    }}
                   >
-                    <Flag id={fav.team} h={12} />
-                    <Link
-                      href={`/team?id=${fav.team}`}
-                      className="font-heading font-semibold truncate hover:underline"
-                      style={{ color: isFinal ? "var(--gold)" : "var(--text)", fontSize: 12.5 }}
-                      title={getName(fav.team)}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {getName(fav.team)}
-                    </Link>
-                    <span
-                      className="tabular ml-auto pl-1 shrink-0"
-                      style={{ color: "var(--muted)", fontSize: 11 }}
-                    >
-                      {(fav.p * 100).toFixed(0)}%
-                    </span>
+                    {n.label}
                   </div>
-                ) : (
+                )}
+
+                {n.dist.length === 0 ? (
                   <div style={{ color: "var(--muted)", fontSize: 11 }}>TBD</div>
-                )}
-
-                {second && !isOpen && (
-                  <div className="flex items-center gap-1.5" style={{ opacity: 0.55 }}>
-                    <Flag id={second.team} h={9} />
-                    <span
-                      className="truncate"
-                      style={{ color: "var(--muted)", fontSize: 10.5 }}
-                      title={getName(second.team)}
+                ) : (
+                  n.dist.slice(0, showN).map((t, ti) => (
+                    <div
+                      key={t.team}
+                      className="flex items-center gap-1"
+                      style={{ marginBottom: ti < Math.min(showN, n.dist.length) - 1 ? 2 : 0 }}
                     >
-                      {getName(second.team)}
-                    </span>
-                    <span
-                      className="tabular ml-auto pl-1 shrink-0"
-                      style={{ color: "var(--muted)", fontSize: 10 }}
-                    >
-                      {(second.p * 100).toFixed(0)}%
-                    </span>
-                  </div>
-                )}
-
-                {isOpen && (
-                  <div className="mt-1 pt-1" style={{ borderTop: "1px solid var(--border)" }}>
-                    <div className="text-xs mb-1" style={{ color: "var(--muted)", fontSize: 9.5 }}>
-                      #{n.match}
-                      {n.date ? ` · ${n.date.slice(5)}` : ""} · full odds
+                      <Flag id={t.team} h={isSlot ? 10 : 12} />
+                      <Link
+                        href={`/team?id=${t.team}`}
+                        className="truncate hover:underline"
+                        style={{
+                          color:
+                            isFinal && ti === 0
+                              ? "var(--gold)"
+                              : ti === 0
+                              ? "var(--text)"
+                              : "var(--muted)",
+                          fontSize: isSlot ? 10.5 : ti === 0 ? 12.5 : 11,
+                          fontWeight: ti === 0 ? 600 : 400,
+                          flex: 1,
+                          minWidth: 0,
+                        }}
+                        title={getName(t.team)}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {getName(t.team)}
+                      </Link>
+                      <span
+                        className="tabular shrink-0"
+                        style={{
+                          color: ti === 0 ? "var(--text)" : "var(--muted)",
+                          fontSize: isSlot ? 9.5 : 10.5,
+                          paddingLeft: 3,
+                        }}
+                      >
+                        {(t.p * 100).toFixed(0)}%
+                      </span>
                     </div>
-                    {n.winner.slice(0, 6).map((t) => (
-                      <div key={t.team} className="flex items-center gap-1.5">
-                        <Flag id={t.team} h={9} />
-                        <span className="truncate" style={{ color: "var(--text)", fontSize: 11 }}>
-                          {getName(t.team)}
-                        </span>
-                        <span
-                          className="tabular ml-auto pl-1 shrink-0"
-                          style={{ color: "var(--muted)", fontSize: 10 }}
-                        >
-                          {(t.p * 100).toFixed(0)}%
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                  ))
                 )}
               </div>
             );

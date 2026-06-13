@@ -67,8 +67,9 @@ export interface TeamDist {
 }
 
 export interface BracketSlot {
-  type: string;  // "R" = runner-up slot, etc.
+  type: string;   // "W" = winner, "R" = runner-up, "T" = third place
   group?: string;
+  allowed?: string[];  // for type "T": which groups' thirds are eligible
 }
 
 export interface BracketR32Match {
