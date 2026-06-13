@@ -1,0 +1,562 @@
+{
+ "matches": [
+  {
+   "id": "GA1",
+   "home": "QAT",
+   "away": "ECU",
+   "hg": 0,
+   "ag": 2,
+   "date": "2022-11-20",
+   "stage": "GA"
+  },
+  {
+   "id": "GA2",
+   "home": "SEN",
+   "away": "NED",
+   "hg": 0,
+   "ag": 2,
+   "date": "2022-11-21",
+   "stage": "GA"
+  },
+  {
+   "id": "GA3",
+   "home": "QAT",
+   "away": "SEN",
+   "hg": 1,
+   "ag": 3,
+   "date": "2022-11-25",
+   "stage": "GA"
+  },
+  {
+   "id": "GA4",
+   "home": "NED",
+   "away": "ECU",
+   "hg": 1,
+   "ag": 1,
+   "date": "2022-11-25",
+   "stage": "GA"
+  },
+  {
+   "id": "GA5",
+   "home": "ECU",
+   "away": "SEN",
+   "hg": 1,
+   "ag": 2,
+   "date": "2022-11-29",
+   "stage": "GA"
+  },
+  {
+   "id": "GA6",
+   "home": "NED",
+   "away": "QAT",
+   "hg": 2,
+   "ag": 0,
+   "date": "2022-11-29",
+   "stage": "GA"
+  },
+  {
+   "id": "GB1",
+   "home": "ENG",
+   "away": "IRN",
+   "hg": 6,
+   "ag": 2,
+   "date": "2022-11-21",
+   "stage": "GB"
+  },
+  {
+   "id": "GB2",
+   "home": "USA",
+   "away": "WAL",
+   "hg": 1,
+   "ag": 1,
+   "date": "2022-11-21",
+   "stage": "GB"
+  },
+  {
+   "id": "GB3",
+   "home": "WAL",
+   "away": "IRN",
+   "hg": 0,
+   "ag": 2,
+   "date": "2022-11-25",
+   "stage": "GB"
+  },
+  {
+   "id": "GB4",
+   "home": "ENG",
+   "away": "USA",
+   "hg": 0,
+   "ag": 0,
+   "date": "2022-11-25",
+   "stage": "GB"
+  },
+  {
+   "id": "GB5",
+   "home": "WAL",
+   "away": "ENG",
+   "hg": 0,
+   "ag": 3,
+   "date": "2022-11-29",
+   "stage": "GB"
+  },
+  {
+   "id": "GB6",
+   "home": "IRN",
+   "away": "USA",
+   "hg": 0,
+   "ag": 1,
+   "date": "2022-11-29",
+   "stage": "GB"
+  },
+  {
+   "id": "GC1",
+   "home": "ARG",
+   "away": "KSA",
+   "hg": 1,
+   "ag": 2,
+   "date": "2022-11-22",
+   "stage": "GC"
+  },
+  {
+   "id": "GC2",
+   "home": "MEX",
+   "away": "POL",
+   "hg": 0,
+   "ag": 0,
+   "date": "2022-11-22",
+   "stage": "GC"
+  },
+  {
+   "id": "GC3",
+   "home": "POL",
+   "away": "KSA",
+   "hg": 2,
+   "ag": 0,
+   "date": "2022-11-26",
+   "stage": "GC"
+  },
+  {
+   "id": "GC4",
+   "home": "ARG",
+   "away": "MEX",
+   "hg": 2,
+   "ag": 0,
+   "date": "2022-11-26",
+   "stage": "GC"
+  },
+  {
+   "id": "GC5",
+   "home": "POL",
+   "away": "ARG",
+   "hg": 0,
+   "ag": 2,
+   "date": "2022-11-30",
+   "stage": "GC"
+  },
+  {
+   "id": "GC6",
+   "home": "KSA",
+   "away": "MEX",
+   "hg": 1,
+   "ag": 2,
+   "date": "2022-11-30",
+   "stage": "GC"
+  },
+  {
+   "id": "GD1",
+   "home": "DEN",
+   "away": "TUN",
+   "hg": 0,
+   "ag": 0,
+   "date": "2022-11-22",
+   "stage": "GD"
+  },
+  {
+   "id": "GD2",
+   "home": "FRA",
+   "away": "AUS",
+   "hg": 4,
+   "ag": 1,
+   "date": "2022-11-22",
+   "stage": "GD"
+  },
+  {
+   "id": "GD3",
+   "home": "TUN",
+   "away": "AUS",
+   "hg": 0,
+   "ag": 1,
+   "date": "2022-11-26",
+   "stage": "GD"
+  },
+  {
+   "id": "GD4",
+   "home": "FRA",
+   "away": "DEN",
+   "hg": 2,
+   "ag": 1,
+   "date": "2022-11-26",
+   "stage": "GD"
+  },
+  {
+   "id": "GD5",
+   "home": "AUS",
+   "away": "DEN",
+   "hg": 1,
+   "ag": 0,
+   "date": "2022-11-30",
+   "stage": "GD"
+  },
+  {
+   "id": "GD6",
+   "home": "TUN",
+   "away": "FRA",
+   "hg": 1,
+   "ag": 0,
+   "date": "2022-11-30",
+   "stage": "GD"
+  },
+  {
+   "id": "GE1",
+   "home": "GER",
+   "away": "JPN",
+   "hg": 1,
+   "ag": 2,
+   "date": "2022-11-23",
+   "stage": "GE"
+  },
+  {
+   "id": "GE2",
+   "home": "SPA",
+   "away": "CRC",
+   "hg": 7,
+   "ag": 0,
+   "date": "2022-11-23",
+   "stage": "GE"
+  },
+  {
+   "id": "GE3",
+   "home": "JPN",
+   "away": "CRC",
+   "hg": 0,
+   "ag": 1,
+   "date": "2022-11-27",
+   "stage": "GE"
+  },
+  {
+   "id": "GE4",
+   "home": "SPA",
+   "away": "GER",
+   "hg": 1,
+   "ag": 1,
+   "date": "2022-11-27",
+   "stage": "GE"
+  },
+  {
+   "id": "GE5",
+   "home": "JPN",
+   "away": "SPA",
+   "hg": 2,
+   "ag": 1,
+   "date": "2022-12-01",
+   "stage": "GE"
+  },
+  {
+   "id": "GE6",
+   "home": "CRC",
+   "away": "GER",
+   "hg": 2,
+   "ag": 4,
+   "date": "2022-12-01",
+   "stage": "GE"
+  },
+  {
+   "id": "GF1",
+   "home": "MAR",
+   "away": "CRO",
+   "hg": 0,
+   "ag": 0,
+   "date": "2022-11-23",
+   "stage": "GF"
+  },
+  {
+   "id": "GF2",
+   "home": "BEL",
+   "away": "CAN",
+   "hg": 1,
+   "ag": 0,
+   "date": "2022-11-23",
+   "stage": "GF"
+  },
+  {
+   "id": "GF3",
+   "home": "BEL",
+   "away": "MAR",
+   "hg": 0,
+   "ag": 2,
+   "date": "2022-11-27",
+   "stage": "GF"
+  },
+  {
+   "id": "GF4",
+   "home": "CRO",
+   "away": "CAN",
+   "hg": 4,
+   "ag": 1,
+   "date": "2022-11-27",
+   "stage": "GF"
+  },
+  {
+   "id": "GF5",
+   "home": "CRO",
+   "away": "BEL",
+   "hg": 0,
+   "ag": 0,
+   "date": "2022-12-01",
+   "stage": "GF"
+  },
+  {
+   "id": "GF6",
+   "home": "CAN",
+   "away": "MAR",
+   "hg": 1,
+   "ag": 2,
+   "date": "2022-12-01",
+   "stage": "GF"
+  },
+  {
+   "id": "GG1",
+   "home": "SUI",
+   "away": "CMR",
+   "hg": 1,
+   "ag": 0,
+   "date": "2022-11-24",
+   "stage": "GG"
+  },
+  {
+   "id": "GG2",
+   "home": "BRA",
+   "away": "SRB",
+   "hg": 2,
+   "ag": 0,
+   "date": "2022-11-24",
+   "stage": "GG"
+  },
+  {
+   "id": "GG3",
+   "home": "CMR",
+   "away": "SRB",
+   "hg": 3,
+   "ag": 3,
+   "date": "2022-11-28",
+   "stage": "GG"
+  },
+  {
+   "id": "GG4",
+   "home": "BRA",
+   "away": "SUI",
+   "hg": 1,
+   "ag": 0,
+   "date": "2022-11-28",
+   "stage": "GG"
+  },
+  {
+   "id": "GG5",
+   "home": "SRB",
+   "away": "SUI",
+   "hg": 2,
+   "ag": 3,
+   "date": "2022-12-02",
+   "stage": "GG"
+  },
+  {
+   "id": "GG6",
+   "home": "CMR",
+   "away": "BRA",
+   "hg": 1,
+   "ag": 0,
+   "date": "2022-12-02",
+   "stage": "GG"
+  },
+  {
+   "id": "GH1",
+   "home": "URU",
+   "away": "KOR",
+   "hg": 0,
+   "ag": 0,
+   "date": "2022-11-24",
+   "stage": "GH"
+  },
+  {
+   "id": "GH2",
+   "home": "POR",
+   "away": "GHA",
+   "hg": 3,
+   "ag": 2,
+   "date": "2022-11-24",
+   "stage": "GH"
+  },
+  {
+   "id": "GH3",
+   "home": "KOR",
+   "away": "GHA",
+   "hg": 2,
+   "ag": 3,
+   "date": "2022-11-28",
+   "stage": "GH"
+  },
+  {
+   "id": "GH4",
+   "home": "POR",
+   "away": "URU",
+   "hg": 2,
+   "ag": 0,
+   "date": "2022-11-28",
+   "stage": "GH"
+  },
+  {
+   "id": "GH5",
+   "home": "GHA",
+   "away": "URU",
+   "hg": 0,
+   "ag": 2,
+   "date": "2022-12-02",
+   "stage": "GH"
+  },
+  {
+   "id": "GH6",
+   "home": "KOR",
+   "away": "POR",
+   "hg": 2,
+   "ag": 1,
+   "date": "2022-12-02",
+   "stage": "GH"
+  },
+  {
+   "id": "KO1",
+   "home": "NED",
+   "away": "USA",
+   "hg": 3,
+   "ag": 1,
+   "date": "2022-12-03",
+   "stage": "KO"
+  },
+  {
+   "id": "KO2",
+   "home": "ARG",
+   "away": "AUS",
+   "hg": 2,
+   "ag": 1,
+   "date": "2022-12-03",
+   "stage": "KO"
+  },
+  {
+   "id": "KO3",
+   "home": "FRA",
+   "away": "POL",
+   "hg": 3,
+   "ag": 1,
+   "date": "2022-12-04",
+   "stage": "KO"
+  },
+  {
+   "id": "KO4",
+   "home": "ENG",
+   "away": "SEN",
+   "hg": 3,
+   "ag": 0,
+   "date": "2022-12-04",
+   "stage": "KO"
+  },
+  {
+   "id": "KO5",
+   "home": "JPN",
+   "away": "CRO",
+   "hg": 1,
+   "ag": 1,
+   "date": "2022-12-05",
+   "stage": "KO"
+  },
+  {
+   "id": "KO6",
+   "home": "BRA",
+   "away": "KOR",
+   "hg": 4,
+   "ag": 1,
+   "date": "2022-12-05",
+   "stage": "KO"
+  },
+  {
+   "id": "KO7",
+   "home": "MAR",
+   "away": "ESP",
+   "hg": 0,
+   "ag": 0,
+   "date": "2022-12-06",
+   "stage": "KO"
+  },
+  {
+   "id": "KO8",
+   "home": "POR",
+   "away": "SUI",
+   "hg": 6,
+   "ag": 1,
+   "date": "2022-12-06",
+   "stage": "KO"
+  },
+  {
+   "id": "KO9",
+   "home": "CRO",
+   "away": "BRA",
+   "hg": 1,
+   "ag": 1,
+   "date": "2022-12-09",
+   "stage": "KO"
+  },
+  {
+   "id": "KO10",
+   "home": "MAR",
+   "away": "POR",
+   "hg": 1,
+   "ag": 0,
+   "date": "2022-12-10",
+   "stage": "KO"
+  },
+  {
+   "id": "KO11",
+   "home": "ENG",
+   "away": "FRA",
+   "hg": 1,
+   "ag": 2,
+   "date": "2022-12-10",
+   "stage": "KO"
+  },
+  {
+   "id": "KO12",
+   "home": "ARG",
+   "away": "CRO",
+   "hg": 3,
+   "ag": 0,
+   "date": "2022-12-13",
+   "stage": "KO"
+  },
+  {
+   "id": "KO13",
+   "home": "FRA",
+   "away": "MAR",
+   "hg": 2,
+   "ag": 0,
+   "date": "2022-12-14",
+   "stage": "KO"
+  },
+  {
+   "id": "KO14",
+   "home": "CRO",
+   "away": "MAR",
+   "hg": 2,
+   "ag": 1,
+   "date": "2022-12-17",
+   "stage": "KO"
+  }
+ ]
+}
