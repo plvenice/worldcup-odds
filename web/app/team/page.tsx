@@ -10,6 +10,7 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
+  ReferenceLine,
 } from "recharts";
 import { useData } from "@/lib/useData";
 import { Flag, getName } from "@/lib/flags";
@@ -79,6 +80,11 @@ function TeamContent() {
   const series = history
     .filter((r: HistoryRow) => r.team === id)
     .map((r) => ({ ts: r.ts, p: r.p_title * 100 }));
+
+  // baseline: overall leader's current probability
+  const leaderTeam = forecast.teams[0];
+  const leaderPct = (leaderTeam?.p_title ?? 0) * 100;
+  const isLeader = leaderTeam?.id === id;
 
   const maxRound = Math.max(...ROUNDS.map((r) => team[r.key]));
 
@@ -201,7 +207,17 @@ function TeamContent() {
 
         {/* p_title history sparkline */}
         <section style={panel()} className="p-4">
-          <h2 className="font-heading font-bold text-lg uppercase tracking-wider" style={{ color: "var(--text)" }}>Title odds over time</h2>
+          <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
+            <h2 className="font-heading font-bold text-lg uppercase tracking-wider" style={{ color: "var(--text)" }}>Title odds over time</h2>
+            {!isLeader && leaderPct > 0 && (
+              <div className="flex items-center gap-1.5" style={{ color: "var(--muted)", fontSize: 11 }}>
+                <svg width={16} height={8} viewBox="0 0 16 8" fill="none">
+                  <line x1="0" y1="4" x2="16" y2="4" stroke="var(--muted)" strokeWidth="1.5" strokeDasharray="3 2" />
+                </svg>
+                Leader ({getName(leaderTeam.id)}) {leaderPct.toFixed(1)}%
+              </div>
+            )}
+          </div>
           {series.length > 1 ? (
             <ResponsiveContainer width="100%" height={160}>
               <LineChart data={series} margin={{ top: 10, right: 10, left: -18, bottom: 0 }}>
@@ -216,6 +232,7 @@ function TeamContent() {
                   tick={{ fill: "var(--muted)", fontSize: 9 }}
                   stroke="var(--border)"
                   tickFormatter={(v) => `${v.toFixed(0)}%`}
+                  domain={[0, isLeader ? "auto" : Math.max(leaderPct * 1.05, 1)]}
                   width={40}
                 />
                 <Tooltip
@@ -228,6 +245,15 @@ function TeamContent() {
                   labelFormatter={(label) => fmtShortDate(String(label))}
                   formatter={(v) => [`${Number(v).toFixed(2)}%`, "P(title)"]}
                 />
+                {!isLeader && leaderPct > 0 && (
+                  <ReferenceLine
+                    y={leaderPct}
+                    stroke="var(--muted)"
+                    strokeDasharray="4 3"
+                    strokeWidth={1}
+                    strokeOpacity={0.5}
+                  />
+                )}
                 <Line
                   type="monotone"
                   dataKey="p"

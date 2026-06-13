@@ -11,7 +11,6 @@ import {
   LineChart,
   Line,
   Legend,
-  ReferenceLine,
 } from "recharts";
 import type { Forecast, HistoryRow } from "@/lib/types";
 import { flagUrl, getName, Flag } from "@/lib/flags";
@@ -37,10 +36,6 @@ export default function TitleRaceChart({ forecast, history }: Props) {
         : 0
       : undefined,
   }));
-
-  // Leader baseline for the line chart
-  const leader = forecast.teams[0];
-  const leaderPct = parseFloat(fmtPctNum(leader?.p_title ?? 0));
 
   // History line chart — top 8 teams
   const top8 = forecast.teams.slice(0, 8).map((t) => t.id);
@@ -261,21 +256,11 @@ export default function TitleRaceChart({ forecast, history }: Props) {
           padding: "12px 16px",
         }}
       >
-        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-          <div
-            className="font-heading font-semibold text-sm uppercase tracking-wide"
-            style={{ color: "var(--muted)" }}
-          >
-            P(Title) Over Time — Top 8
-          </div>
-          {leader && (
-            <div className="flex items-center gap-1.5 text-xs" style={{ color: "var(--gold)" }}>
-              <svg width={12} height={12} viewBox="0 0 12 12" fill="none">
-                <line x1="0" y1="6" x2="12" y2="6" stroke="var(--gold)" strokeWidth="1.5" strokeDasharray="3 2" />
-              </svg>
-              Leader ({getName(leader.id)}) — {leaderPct.toFixed(1)}%
-            </div>
-          )}
+        <div
+          className="font-heading font-semibold text-sm uppercase tracking-wide mb-3"
+          style={{ color: "var(--muted)" }}
+        >
+          P(Title) Over Time — Top 8
         </div>
 
         {lineData.length < 2 ? (
@@ -326,22 +311,13 @@ export default function TitleRaceChart({ forecast, history }: Props) {
                 </span>
               )}
             />
-            {leader && leaderPct > 0 && (
-              <ReferenceLine
-                y={leaderPct}
-                stroke="var(--gold)"
-                strokeDasharray="4 3"
-                strokeWidth={1}
-                strokeOpacity={0.45}
-              />
-            )}
             {top8.map((tid, i) => (
               <Line
                 key={tid}
                 type="monotone"
                 dataKey={tid}
                 stroke={teamColor(tid, i)}
-                strokeWidth={tid === leader?.id ? 2.5 : 1.5}
+                strokeWidth={2}
                 dot={lineData.length === 1 ? { r: 4 } : false}
                 activeDot={{ r: 4 }}
                 connectNulls
