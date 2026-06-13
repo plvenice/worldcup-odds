@@ -52,10 +52,7 @@ export default function Header({ forecast, loading, lastFetched }: Props) {
               </span>
             )}
             {forecast && (
-              <span>
-                · {forecast.nsims.toLocaleString()} sims ·{" "}
-                <span style={{ color: "var(--muted)" }}>{forecast.results_source}</span>
-              </span>
+              <span>· {forecast.nsims.toLocaleString()} sims</span>
             )}
           </div>
         </div>
