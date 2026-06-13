@@ -40,7 +40,7 @@ function AdvanceBar({ team, forecast }: { team: string; forecast: Forecast }) {
       </div>
       <div className="flex justify-between text-xs mt-0.5 tabular" style={{ color: "var(--muted)" }}>
         <span>{fmtPct(t.p_advance)} adv</span>
-        <span style={{ fontSize: 10 }}>
+        <span style={{ fontSize: 10, whiteSpace: "nowrap" }}>
           1st {gwPct}% · 2nd {gsPct}% · 3rd {taPct}%
         </span>
       </div>
