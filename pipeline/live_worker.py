@@ -5,12 +5,16 @@ matches are live, a 30-minute heartbeat otherwise, and it wakes ~2 min before
 each scheduled kickoff. Computes in-match win probabilities and serves them as
 JSON for the dashboard to poll.
 
+Also triggers the GitHub Actions refresh workflow every 15 minutes via
+workflow_dispatch, bypassing GitHub's unreliable cron scheduler.
+
 Endpoints:
-  GET /live.json  -> {updated_at, live: bool, matches: [...]}
+  GET /live.json  -> {updated_at, live: bool, matches: [...], title_updates: {...}}
   GET /health     -> {ok: true}
 
 Env:
   API_FOOTBALL_KEY   (required for live data; without it serves an empty feed)
+  GH_DISPATCH_TOKEN  (GitHub PAT with workflow scope; enables 15-min dispatch)
   PORT               (Railway sets this; default 8080)
   LIVE_INTERVAL      seconds between polls while live (default 20)
   IDLE_INTERVAL      seconds between heartbeats when idle (default 1800)
@@ -39,6 +43,40 @@ FORECAST_URL = os.environ.get(
     "https://raw.githubusercontent.com/plvenice/worldcup-odds/data/forecast.json")
 ALLOW_ORIGIN = os.environ.get("ALLOW_ORIGIN", "*")
 FORECAST_REFRESH = 900  # re-pull pre-match lambdas every 15 min
+
+GH_DISPATCH_TOKEN = os.environ.get("GH_DISPATCH_TOKEN", "")
+GH_REPO = "plvenice/worldcup-odds"
+GH_WORKFLOW = "refresh.yml"
+DISPATCH_INTERVAL = 900  # 15 minutes — matches FORECAST_REFRESH
+
+
+def dispatch_loop():
+    """Fires workflow_dispatch on the refresh workflow every 15 min.
+    Bypasses GitHub's unreliable cron scheduler for public repos."""
+    if not GH_DISPATCH_TOKEN:
+        print("GH_DISPATCH_TOKEN not set — pipeline dispatch disabled", flush=True)
+        return
+    # Stagger first fire by 60s so Railway has fully started before the first push.
+    time.sleep(60)
+    while True:
+        try:
+            r = requests.post(
+                f"https://api.github.com/repos/{GH_REPO}/actions/workflows/{GH_WORKFLOW}/dispatches",
+                headers={
+                    "Authorization": f"Bearer {GH_DISPATCH_TOKEN}",
+                    "Accept": "application/vnd.github+json",
+                    "X-GitHub-Api-Version": "2022-11-28",
+                },
+                json={"ref": "master"},
+                timeout=15,
+            )
+            if r.status_code == 204:
+                print(f"dispatch ok ({datetime.now(timezone.utc).isoformat()})", flush=True)
+            else:
+                print(f"dispatch {r.status_code}: {r.text[:120]}", flush=True)
+        except Exception as e:
+            print(f"dispatch error: {e}", flush=True)
+        time.sleep(DISPATCH_INTERVAL)
 
 _LOCK = threading.Lock()
 _STATE = {"updated_at": None, "live": False, "matches": [], "title_updates": {}}
@@ -171,10 +209,12 @@ class Handler(BaseHTTPRequestHandler):
 
 def main():
     threading.Thread(target=poll_loop, daemon=True).start()
+    threading.Thread(target=dispatch_loop, daemon=True).start()
     port = int(os.environ.get("PORT", "8080"))
     srv = ThreadingHTTPServer(("0.0.0.0", port), Handler)
     print(f"live worker serving on :{port} "
-          f"(live={LIVE_INTERVAL}s / idle={IDLE_INTERVAL}s)", flush=True)
+          f"(live={LIVE_INTERVAL}s / idle={IDLE_INTERVAL}s / "
+          f"dispatch={'on' if GH_DISPATCH_TOKEN else 'off'})", flush=True)
     srv.serve_forever()
 
 
