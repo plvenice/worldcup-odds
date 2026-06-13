@@ -1,0 +1,436 @@
+{
+ "matches": [
+  {
+   "id": "GA1",
+   "home": "RUS",
+   "away": "KSA",
+   "hg": 5,
+   "ag": 0,
+   "date": "2018-06-14",
+   "stage": "GA"
+  },
+  {
+   "id": "GA2",
+   "home": "EGY",
+   "away": "URU",
+   "hg": 0,
+   "ag": 1,
+   "date": "2018-06-15",
+   "stage": "GA"
+  },
+  {
+   "id": "GA3",
+   "home": "RUS",
+   "away": "EGY",
+   "hg": 3,
+   "ag": 1,
+   "date": "2018-06-19",
+   "stage": "GA"
+  },
+  {
+   "id": "GA4",
+   "home": "URU",
+   "away": "KSA",
+   "hg": 1,
+   "ag": 0,
+   "date": "2018-06-20",
+   "stage": "GA"
+  },
+  {
+   "id": "GA5",
+   "home": "URU",
+   "away": "RUS",
+   "hg": 3,
+   "ag": 0,
+   "date": "2018-06-25",
+   "stage": "GA"
+  },
+  {
+   "id": "GA6",
+   "home": "KSA",
+   "away": "EGY",
+   "hg": 2,
+   "ag": 1,
+   "date": "2018-06-25",
+   "stage": "GA"
+  },
+  {
+   "id": "GB1",
+   "home": "MAR",
+   "away": "IRN",
+   "hg": 0,
+   "ag": 1,
+   "date": "2018-06-15",
+   "stage": "GB"
+  },
+  {
+   "id": "GB2",
+   "home": "POR",
+   "away": "ESP",
+   "hg": 3,
+   "ag": 3,
+   "date": "2018-06-15",
+   "stage": "GB"
+  },
+  {
+   "id": "GB3",
+   "home": "POR",
+   "away": "MAR",
+   "hg": 1,
+   "ag": 0,
+   "date": "2018-06-20",
+   "stage": "GB"
+  },
+  {
+   "id": "GB4",
+   "home": "IRN",
+   "away": "ESP",
+   "hg": 0,
+   "ag": 1,
+   "date": "2018-06-20",
+   "stage": "GB"
+  },
+  {
+   "id": "GB5",
+   "home": "IRN",
+   "away": "POR",
+   "hg": 1,
+   "ag": 1,
+   "date": "2018-06-25",
+   "stage": "GB"
+  },
+  {
+   "id": "GB6",
+   "home": "ESP",
+   "away": "MAR",
+   "hg": 2,
+   "ag": 2,
+   "date": "2018-06-25",
+   "stage": "GB"
+  },
+  {
+   "id": "GC1",
+   "home": "FRA",
+   "away": "AUS",
+   "hg": 2,
+   "ag": 1,
+   "date": "2018-06-16",
+   "stage": "GC"
+  },
+  {
+   "id": "GC2",
+   "home": "PER",
+   "away": "DEN",
+   "hg": 0,
+   "ag": 1,
+   "date": "2018-06-16",
+   "stage": "GC"
+  },
+  {
+   "id": "GC3",
+   "home": "DEN",
+   "away": "AUS",
+   "hg": 1,
+   "ag": 1,
+   "date": "2018-06-21",
+   "stage": "GC"
+  },
+  {
+   "id": "GC4",
+   "home": "FRA",
+   "away": "PER",
+   "hg": 1,
+   "ag": 0,
+   "date": "2018-06-21",
+   "stage": "GC"
+  },
+  {
+   "id": "GC5",
+   "home": "DEN",
+   "away": "FRA",
+   "hg": 0,
+   "ag": 0,
+   "date": "2018-06-26",
+   "stage": "GC"
+  },
+  {
+   "id": "GC6",
+   "home": "AUS",
+   "away": "PER",
+   "hg": 0,
+   "ag": 2,
+   "date": "2018-06-26",
+   "stage": "GC"
+  },
+  {
+   "id": "GD1",
+   "home": "ARG",
+   "away": "ISL",
+   "hg": 1,
+   "ag": 1,
+   "date": "2018-06-16",
+   "stage": "GD"
+  },
+  {
+   "id": "GD2",
+   "home": "CRO",
+   "away": "NGA",
+   "hg": 2,
+   "ag": 0,
+   "date": "2018-06-16",
+   "stage": "GD"
+  },
+  {
+   "id": "GD3",
+   "home": "ARG",
+   "away": "CRO",
+   "hg": 0,
+   "ag": 3,
+   "date": "2018-06-21",
+   "stage": "GD"
+  },
+  {
+   "id": "GD4",
+   "home": "NGA",
+   "away": "ISL",
+   "hg": 2,
+   "ag": 0,
+   "date": "2018-06-22",
+   "stage": "GD"
+  },
+  {
+   "id": "GD5",
+   "home": "NGA",
+   "away": "ARG",
+   "hg": 1,
+   "ag": 2,
+   "date": "2018-06-26",
+   "stage": "GD"
+  },
+  {
+   "id": "GD6",
+   "home": "ISL",
+   "away": "CRO",
+   "hg": 1,
+   "ag": 2,
+   "date": "2018-06-26",
+   "stage": "GD"
+  },
+  {
+   "id": "GE1",
+   "home": "CRC",
+   "away": "SRB",
+   "hg": 0,
+   "ag": 1,
+   "date": "2018-06-17",
+   "stage": "GE"
+  },
+  {
+   "id": "GE2",
+   "home": "BRA",
+   "away": "SUI",
+   "hg": 1,
+   "ag": 1,
+   "date": "2018-06-17",
+   "stage": "GE"
+  },
+  {
+   "id": "GE3",
+   "home": "BRA",
+   "away": "CRC",
+   "hg": 2,
+   "ag": 0,
+   "date": "2018-06-22",
+   "stage": "GE"
+  },
+  {
+   "id": "GE4",
+   "home": "SRB",
+   "away": "SUI",
+   "hg": 1,
+   "ag": 2,
+   "date": "2018-06-22",
+   "stage": "GE"
+  },
+  {
+   "id": "GE5",
+   "home": "SRB",
+   "away": "BRA",
+   "hg": 0,
+   "ag": 2,
+   "date": "2018-06-27",
+   "stage": "GE"
+  },
+  {
+   "id": "GE6",
+   "home": "SUI",
+   "away": "CRC",
+   "hg": 2,
+   "ag": 2,
+   "date": "2018-06-27",
+   "stage": "GE"
+  },
+  {
+   "id": "GF1",
+   "home": "GER",
+   "away": "MEX",
+   "hg": 0,
+   "ag": 1,
+   "date": "2018-06-17",
+   "stage": "GF"
+  },
+  {
+   "id": "GF2",
+   "home": "SWE",
+   "away": "KOR",
+   "hg": 1,
+   "ag": 0,
+   "date": "2018-06-18",
+   "stage": "GF"
+  },
+  {
+   "id": "GF3",
+   "home": "KOR",
+   "away": "MEX",
+   "hg": 1,
+   "ag": 2,
+   "date": "2018-06-23",
+   "stage": "GF"
+  },
+  {
+   "id": "GF4",
+   "home": "GER",
+   "away": "SWE",
+   "hg": 2,
+   "ag": 1,
+   "date": "2018-06-23",
+   "stage": "GF"
+  },
+  {
+   "id": "GF5",
+   "home": "KOR",
+   "away": "GER",
+   "hg": 2,
+   "ag": 0,
+   "date": "2018-06-27",
+   "stage": "GF"
+  },
+  {
+   "id": "GF6",
+   "home": "MEX",
+   "away": "SWE",
+   "hg": 0,
+   "ag": 3,
+   "date": "2018-06-27",
+   "stage": "GF"
+  },
+  {
+   "id": "GG1",
+   "home": "BEL",
+   "away": "PAN",
+   "hg": 3,
+   "ag": 0,
+   "date": "2018-06-18",
+   "stage": "GG"
+  },
+  {
+   "id": "GG2",
+   "home": "TUN",
+   "away": "ENG",
+   "hg": 1,
+   "ag": 2,
+   "date": "2018-06-18",
+   "stage": "GG"
+  },
+  {
+   "id": "GG3",
+   "home": "BEL",
+   "away": "TUN",
+   "hg": 5,
+   "ag": 2,
+   "date": "2018-06-23",
+   "stage": "GG"
+  },
+  {
+   "id": "GG4",
+   "home": "ENG",
+   "away": "PAN",
+   "hg": 6,
+   "ag": 1,
+   "date": "2018-06-24",
+   "stage": "GG"
+  },
+  {
+   "id": "GG5",
+   "home": "ENG",
+   "away": "BEL",
+   "hg": 0,
+   "ag": 1,
+   "date": "2018-06-28",
+   "stage": "GG"
+  },
+  {
+   "id": "GG6",
+   "home": "PAN",
+   "away": "TUN",
+   "hg": 1,
+   "ag": 2,
+   "date": "2018-06-28",
+   "stage": "GG"
+  },
+  {
+   "id": "GH1",
+   "home": "COL",
+   "away": "JPN",
+   "hg": 1,
+   "ag": 2,
+   "date": "2018-06-19",
+   "stage": "GH"
+  },
+  {
+   "id": "GH2",
+   "home": "POL",
+   "away": "SEN",
+   "hg": 1,
+   "ag": 2,
+   "date": "2018-06-19",
+   "stage": "GH"
+  },
+  {
+   "id": "GH3",
+   "home": "JPN",
+   "away": "SEN",
+   "hg": 2,
+   "ag": 2,
+   "date": "2018-06-24",
+   "stage": "GH"
+  },
+  {
+   "id": "GH4",
+   "home": "POL",
+   "away": "COL",
+   "hg": 0,
+   "ag": 3,
+   "date": "2018-06-24",
+   "stage": "GH"
+  },
+  {
+   "id": "GH5",
+   "home": "JPN",
+   "away": "POL",
+   "hg": 0,
+   "ag": 1,
+   "date": "2018-06-28",
+   "stage": "GH"
+  },
+  {
+   "id": "GH6",
+   "home": "SEN",
+   "away": "COL",
+   "hg": 0,
+   "ag": 1,
+   "date": "2018-06-28",
+   "stage": "GH"
+  }
+ ]
+}

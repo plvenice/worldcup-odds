@@ -14,6 +14,13 @@ DC_RHO = -0.10              # Dixon-Coles low-score correction (boosts draws)
 PEN_TILT_PER_400 = 0.02     # max penalty-shootout edge at |dr|>=400 is 52/48
 ET_LAMBDA_FACTOR = 0.30     # extra time ~30 min at slightly reduced intensity
 
+# Calibration temperature applied to the score matrix. T>1 softens (pulls
+# probabilities toward the base rate); T=1 is the raw model. Fit out-of-sample
+# on 2018<->2022 World Cups (pipeline/backtest/calibrate.py) to correct the
+# overconfidence the backtest exposed. Applied once here so match odds,
+# knockout odds, and the tournament Monte Carlo all inherit it consistently.
+MODEL_TEMPERATURE = 1.40
+
 
 def lambdas(dr, total_factor=1.0):
     """Expected goals (home-ish, away-ish) given adjusted Elo difference dr.
@@ -28,8 +35,9 @@ def lambdas(dr, total_factor=1.0):
     return lh, la
 
 
-def score_matrix(lh, la, max_goals=MAX_GOALS, rho=DC_RHO):
-    """(max_goals+1)^2 matrix of P(home=i, away=j), Dixon-Coles corrected."""
+def score_matrix(lh, la, max_goals=MAX_GOALS, rho=DC_RHO, temperature=None):
+    """(max_goals+1)^2 matrix of P(home=i, away=j), Dixon-Coles corrected,
+    then temperature-scaled (T>1 softens toward uniform)."""
     g = np.arange(max_goals + 1)
     ph = np.exp(-lh) * np.power(lh, g) / _factorials(max_goals)
     pa = np.exp(-la) * np.power(la, g) / _factorials(max_goals)
@@ -39,7 +47,12 @@ def score_matrix(lh, la, max_goals=MAX_GOALS, rho=DC_RHO):
     m[1, 0] *= max(1 + la * rho, 0.05)
     m[0, 1] *= max(1 + lh * rho, 0.05)
     m[1, 1] *= max(1 - rho, 0.05)
-    return m / m.sum()
+    m = m / m.sum()
+    t = MODEL_TEMPERATURE if temperature is None else temperature
+    if t != 1.0:
+        m = np.power(m, 1.0 / t)
+        m /= m.sum()
+    return m
 
 
 _FACT_CACHE = {}
@@ -54,10 +67,10 @@ def _factorials(n):
     return _FACT_CACHE[n]
 
 
-def outcome_probs(dr, total_factor=1.0):
+def outcome_probs(dr, total_factor=1.0, temperature=None):
     """(p_home_win, p_draw, p_away_win) over 90 minutes."""
     lh, la = lambdas(float(dr), total_factor)
-    m = score_matrix(lh, la)
+    m = score_matrix(lh, la, temperature=temperature)
     return float(np.tril(m, -1).sum()), float(np.trace(m)), float(np.triu(m, 1).sum())
 
 
