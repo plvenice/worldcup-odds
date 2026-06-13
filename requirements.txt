@@ -1,0 +1,4 @@
+# Root requirements for the Railway live worker (pipeline/live_worker.py).
+# The GitHub Actions pipeline uses pipeline/requirements.txt instead.
+numpy>=1.26
+requests>=2.31

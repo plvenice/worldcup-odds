@@ -11,7 +11,7 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 
 from . import data, factors, wiki, weather, odds
-from .matchmodel import elo_update, outcome_probs, blend_outcome
+from .matchmodel import elo_update, outcome_probs, blend_outcome, lambdas
 from . import standings as st
 from .mc import simulate
 
@@ -171,6 +171,9 @@ def aggregate(state, res, nsims):
                 mk = fx["market_probs"]
                 rec["model_probs"] = {"home": mo[0], "draw": mo[1], "away": mo[2]}
                 rec["market_probs"] = {"home": mk[0], "draw": mk[1], "away": mk[2]}
+            # pre-match expected goals — inputs for the live in-match model
+            lh, la = lambdas(fx["dr"], fx.get("total_factor", 1.0))
+            rec["lambdas"] = [round(float(lh), 3), round(float(la), 3)]
             rec["attribution"] = state["attributions"].get(fx["id"], {})
             out = res.fixture_outcome[fx["id"]]
             lev = []
