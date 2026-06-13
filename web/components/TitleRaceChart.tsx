@@ -19,10 +19,22 @@ import { fmtPct, fmtPctNum, fmtShortDate, getTimestamps, teamColor } from "@/lib
 interface Props {
   forecast: Forecast;
   history: HistoryRow[];
+  liveTitleUpdates?: Record<string, number>;
 }
 
-export default function TitleRaceChart({ forecast, history }: Props) {
-  const top14 = forecast.teams.slice(0, 14);
+export default function TitleRaceChart({ forecast, history, liveTitleUpdates = {} }: Props) {
+  const isLive = Object.keys(liveTitleUpdates).length > 0;
+
+  // Apply live conditional title odds when a match is in progress; fall back to
+  // the last MC result otherwise. This recalculates on every 20-second live.json
+  // poll so the bars reflect the current in-match state.
+  const teamsWithLive = forecast.teams.map((t) => ({
+    ...t,
+    p_title: liveTitleUpdates[t.id] ?? t.p_title,
+  }));
+  // Re-sort since live probabilities can reorder the top field.
+  teamsWithLive.sort((a, b) => b.p_title - a.p_title);
+  const top14 = teamsWithLive.slice(0, 14);
   const hasMarket = forecast.market !== null;
 
   // Bar chart data
@@ -145,10 +157,22 @@ export default function TitleRaceChart({ forecast, history }: Props) {
   return (
     <section>
       <h2
-        className="font-heading font-bold text-lg uppercase tracking-wider mb-3"
+        className="font-heading font-bold text-lg uppercase tracking-wider mb-3 flex items-center gap-2"
         style={{ color: "var(--text)" }}
       >
         Title Race
+        {isLive && (
+          <span
+            className="flex items-center gap-1 text-xs font-normal normal-case tracking-normal px-2 py-0.5 rounded-full"
+            style={{ background: "rgba(255,77,77,0.15)", color: "var(--red)", border: "1px solid var(--red)" }}
+          >
+            <span
+              className="inline-block rounded-full"
+              style={{ width: 6, height: 6, background: "var(--red)", animation: "pulse 1.4s infinite" }}
+            />
+            live conditioned
+          </span>
+        )}
       </h2>
 
       <div

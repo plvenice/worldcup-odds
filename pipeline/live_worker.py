@@ -41,33 +41,53 @@ ALLOW_ORIGIN = os.environ.get("ALLOW_ORIGIN", "*")
 FORECAST_REFRESH = 900  # re-pull pre-match lambdas every 15 min
 
 _LOCK = threading.Lock()
-_STATE = {"updated_at": None, "live": False, "matches": []}
-_LAMBDAS = {}          # frozenset({home,away}) -> {"home": code, "lh":, "la":}
+_STATE = {"updated_at": None, "live": False, "matches": [], "title_updates": {}}
+_LAMBDAS = {}          # frozenset({home,away}) -> {"home": code, "lh":, "la":, "group":}
+_LEVERAGE = {}         # frozenset({home,away}) -> {team_id: [p_title_h, p_title_d, p_title_a]}
 _LAMBDAS_AT = 0.0
 
 
 def refresh_lambdas(force=False):
-    global _LAMBDAS, _LAMBDAS_AT
+    global _LAMBDAS, _LEVERAGE, _LAMBDAS_AT
     if not force and time.time() - _LAMBDAS_AT < FORECAST_REFRESH:
         return
     try:
         fc = requests.get(FORECAST_URL, timeout=15).json()
         m = {}
+        lev = {}
         for mt in fc.get("matches", []):
             lam = mt.get("lambdas")
             if mt.get("played") or not lam:
                 continue
-            m[frozenset((mt["home"], mt["away"]))] = {
+            key = frozenset((mt["home"], mt["away"]))
+            m[key] = {
                 "home": mt["home"], "lh": lam[0], "la": lam[1], "group": mt.get("group")}
+            if mt.get("leverage"):
+                lev[key] = {
+                    l["team"]: l["p_title_by_outcome"]
+                    for l in mt["leverage"]
+                    if l.get("p_title_by_outcome")
+                }
         if m:
             _LAMBDAS = m
+        if lev:
+            _LEVERAGE = lev
         _LAMBDAS_AT = time.time()
     except Exception:
         pass
 
 
 def compute_live(fixtures):
+    """Returns (matches, title_updates).
+
+    title_updates: {team_id: conditional_p_title} for all teams whose group has
+    a live match. Uses the pre-computed leverage table from forecast.json so no
+    extra MC calls are needed — it's a weighted sum over match outcomes.
+    Leverage outcomes are indexed 0=home_wins, 1=draw, 2=away_wins relative to
+    the fixture's home/away assignment in forecast.json.
+    """
     out = []
+    title_updates = {}
     for fx in fixtures:
         rec = {k: fx[k] for k in ("home", "away", "hg", "ag", "minute", "status")}
         ref = _LAMBDAS.get(frozenset((fx["home"], fx["away"])))
@@ -82,8 +102,18 @@ def compute_live(fixtures):
             rec["p_draw"] = round(pd, 4)
             rec["p_away"] = round(pa, 4)
             rec["group"] = ref.get("group")
+
+            # Conditional title odds via leverage: w = [p_h, p_d, p_a] oriented
+            # to the fixture (index 0=home_wins, 1=draw, 2=away_wins).
+            lev_key = frozenset((fx["home"], fx["away"]))
+            lev = _LEVERAGE.get(lev_key)
+            if lev:
+                w = [ph, pd, pa] if ref["home"] == fx["home"] else [pa, pd, ph]
+                for team, by_outcome in lev.items():
+                    title_updates[team] = round(
+                        sum(w[k] * by_outcome[k] for k in range(3)), 4)
         out.append(rec)
-    return out
+    return out, title_updates
 
 
 def poll_loop():
@@ -91,11 +121,12 @@ def poll_loop():
     while True:
         refresh_lambdas()
         fixtures = apifootball.fetch_live()
-        matches = compute_live(fixtures)
+        matches, title_updates = compute_live(fixtures)
         with _LOCK:
             _STATE["updated_at"] = datetime.now(timezone.utc).isoformat()
             _STATE["live"] = len(matches) > 0
             _STATE["matches"] = matches
+            _STATE["title_updates"] = title_updates
         if matches:
             time.sleep(LIVE_INTERVAL)
         else:

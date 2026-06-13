@@ -14,7 +14,7 @@ import requests
 from . import data
 
 STATE = data.ROOT / "out" / "odds_state.json"
-OUTRIGHT_DAILY_CAP = 2
+OUTRIGHT_DAILY_CAP = 8  # ~240 credits/month — well within 500 free
 H2H_DAILY_CAP = 3
 
 # Weight on the betting market when blending market match odds with the

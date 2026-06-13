@@ -57,7 +57,7 @@ const NAV_ITEMS = [
 ];
 
 export default function HomePage() {
-  const { forecast, history, loading, error, lastFetched } = useData();
+  const { forecast, history, loading, error, lastFetched, liveTitleUpdates } = useData();
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--bg)" }}>
@@ -118,7 +118,7 @@ export default function HomePage() {
         {forecast && (
           <>
             <div id="title-race">
-              <TitleRaceChart forecast={forecast} history={history} />
+              <TitleRaceChart forecast={forecast} history={history} liveTitleUpdates={liveTitleUpdates} />
             </div>
             <div id="bracket">
               <BracketView forecast={forecast} />
