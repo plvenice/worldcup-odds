@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { Forecast, GroupRow } from "@/lib/types";
-import { getFlag } from "@/lib/flags";
+import { Flag, getName } from "@/lib/flags";
 import { fmtPct } from "@/lib/utils";
 
 interface Props {
@@ -100,18 +100,17 @@ function GroupCard({
               >
                 <td className="px-3 py-2">
                   <div className="flex items-center gap-1.5">
-                    <span>{getFlag(row.team)}</span>
+                    <Flag id={row.team} h={13} />
                     <Link
                       href={`/team?id=${row.team}`}
-                      className="font-semibold hover:underline"
+                      className="font-semibold hover:underline whitespace-nowrap"
                       style={{
                         color: i === 0 ? "var(--gold)" : "var(--text)",
                         fontFamily: "'Barlow Condensed', system-ui",
-                        fontSize: 13,
-                        letterSpacing: "0.05em",
+                        fontSize: 14,
                       }}
                     >
-                      {row.team}
+                      {getName(row.team)}
                     </Link>
                   </div>
                   {teamForecast && (

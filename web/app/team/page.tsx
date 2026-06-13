@@ -12,7 +12,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useData } from "@/lib/useData";
-import { getFlag } from "@/lib/flags";
+import { Flag, getName } from "@/lib/flags";
 import { fmtPct, fmtElo, fmtMatchDate, fmtShortDate } from "@/lib/utils";
 import type { Match, HistoryRow } from "@/lib/types";
 
@@ -90,7 +90,7 @@ function TeamContent() {
 
       {/* hero */}
       <div className="flex items-center gap-4 flex-wrap">
-        <span style={{ fontSize: 52, lineHeight: 1 }}>{getFlag(team.id)}</span>
+        <Flag id={team.id} h={40} style={{ borderRadius: 4 }} />
         <div>
           <h1
             style={{
@@ -183,8 +183,11 @@ function TeamContent() {
                     }}
                   >
                     <td className="py-1">
-                      <span style={{ color: "var(--muted)", marginRight: 6 }}>{i + 1}</span>
-                      {getFlag(row.team)} {row.team}
+                      <span className="inline-flex items-center gap-1.5">
+                        <span style={{ color: "var(--muted)" }}>{i + 1}</span>
+                        <Flag id={row.team} h={12} />
+                        {getName(row.team)}
+                      </span>
                     </td>
                     <td className="text-center">{row.played}</td>
                     <td className="text-center">{row.gd > 0 ? `+${row.gd}` : row.gd}</td>
@@ -274,8 +277,10 @@ function RemainingMatch({ m, teamId }: { m: Match; teamId: string }) {
       <span style={{ width: 92, color: "var(--muted)", fontSize: 11 }}>
         {fmtMatchDate(m.date)}
       </span>
-      <span style={{ width: 96, fontSize: 13 }}>
-        {isHome ? "vs" : "@"} {getFlag(opp)} {opp}
+      <span className="inline-flex items-center gap-1.5" style={{ width: 150, fontSize: 13 }}>
+        <span style={{ color: "var(--muted)" }}>{isHome ? "vs" : "@"}</span>
+        <Flag id={opp} h={12} />
+        <span className="truncate" title={getName(opp)}>{getName(opp)}</span>
       </span>
       <div className="flex-1 h-5 rounded overflow-hidden flex" style={{ background: "var(--bg)" }}>
         <Seg p={winP} color="var(--green)" label="W" />

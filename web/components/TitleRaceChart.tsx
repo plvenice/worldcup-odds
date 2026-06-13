@@ -14,7 +14,7 @@ import {
   Legend,
 } from "recharts";
 import type { Forecast, HistoryRow } from "@/lib/types";
-import { getFlag } from "@/lib/flags";
+import { flagUrl, getName, Flag } from "@/lib/flags";
 import { fmtPct, fmtPctNum, fmtShortDate, getTimestamps, teamColor } from "@/lib/utils";
 
 interface Props {
@@ -95,7 +95,7 @@ export default function TitleRaceChart({ forecast, history }: Props) {
           fontSize: 12,
         }}
       >
-        <div style={{ color: "var(--text)", fontWeight: 600, marginBottom: 4 }}>{label}</div>
+        <div style={{ color: "var(--text)", fontWeight: 600, marginBottom: 4 }}>{getName(label ?? "")}</div>
         {payload.map((p) => (
           <div key={p.name} style={{ color: p.color }}>
             {p.name}: {p.value.toFixed(1)}%
@@ -160,13 +160,37 @@ export default function TitleRaceChart({ forecast, history }: Props) {
             <YAxis
               type="category"
               dataKey="id"
-              width={52}
+              width={140}
               interval={0}
-              tick={(props: { x?: number | string; y?: number | string; payload?: { value?: string } }) => (
-                <text x={Number(props.x)} y={Number(props.y)} dy={4} textAnchor="end" fill="var(--text)" fontSize={12} fontFamily="'Barlow Condensed', system-ui">
-                  {getFlag(props.payload?.value ?? "")} {props.payload?.value ?? ""}
-                </text>
-              )}
+              tick={(props: { x?: number | string; y?: number | string; payload?: { value?: string } }) => {
+                const id = props.payload?.value ?? "";
+                const yy = Number(props.y);
+                const url = flagUrl(id);
+                return (
+                  <g>
+                    {url && (
+                      <image
+                        href={url}
+                        x={2}
+                        y={yy - 6.5}
+                        width={18}
+                        height={13}
+                        preserveAspectRatio="xMidYMid meet"
+                      />
+                    )}
+                    <text
+                      x={url ? 26 : 4}
+                      y={yy + 4}
+                      textAnchor="start"
+                      fill="var(--text)"
+                      fontSize={12.5}
+                      fontFamily="'Barlow Condensed', system-ui"
+                    >
+                      {getName(id)}
+                    </text>
+                  </g>
+                );
+              }}
               axisLine={false}
               tickLine={false}
             />
@@ -235,7 +259,7 @@ export default function TitleRaceChart({ forecast, history }: Props) {
             <Tooltip
               formatter={(value, name) => [
                 `${Number(value).toFixed(1)}%`,
-                `${getFlag(String(name))} ${String(name)}`,
+                getName(String(name)),
               ]}
               contentStyle={{
                 background: "var(--panel)",
@@ -247,8 +271,11 @@ export default function TitleRaceChart({ forecast, history }: Props) {
             />
             <Legend
               formatter={(value) => (
-                <span style={{ color: "var(--muted)", fontSize: 11 }}>
-                  {getFlag(String(value))} {String(value)}
+                <span
+                  className="inline-flex items-center gap-1"
+                  style={{ color: "var(--muted)", fontSize: 11 }}
+                >
+                  <Flag id={String(value)} h={10} /> {getName(String(value))}
                 </span>
               )}
             />

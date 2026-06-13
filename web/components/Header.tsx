@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { Forecast } from "@/lib/types";
-import { getFlag } from "@/lib/flags";
+import { Flag } from "@/lib/flags";
 import { fmtPct, minutesAgo } from "@/lib/utils";
 
 interface Props {
@@ -73,12 +73,12 @@ export default function Header({ forecast, loading, lastFetched }: Props) {
                   border: `1px solid ${i === 0 ? "var(--gold)" : "var(--border)"}`,
                 }}
               >
-                <span className="text-base leading-none">{getFlag(team.id)}</span>
+                <Flag id={team.id} h={13} />
                 <span
                   className="font-heading font-semibold text-sm tracking-wide"
                   style={{ color: i === 0 ? "var(--gold)" : "var(--text)" }}
                 >
-                  {team.id}
+                  {team.name}
                 </span>
                 <span
                   className="tabular text-xs font-semibold"

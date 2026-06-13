@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { Match } from "@/lib/types";
-import { getFlag } from "@/lib/flags";
+import { Flag, getName } from "@/lib/flags";
 import { fmtPct, fmtMatchDate } from "@/lib/utils";
 
 interface Props {
@@ -85,8 +85,8 @@ function LeverageDetail({ match }: { match: Match }) {
     >
       {match.leverage.map((lev) => (
         <div key={lev.team} className="flex flex-col gap-1">
-          <div className="font-semibold" style={{ color: "var(--text)" }}>
-            {getFlag(lev.team)} {lev.team}
+          <div className="flex items-center gap-1.5 font-semibold" style={{ color: "var(--text)" }}>
+            <Flag id={lev.team} h={12} /> {getName(lev.team)}
           </div>
           <div className="flex gap-3 flex-wrap">
             <div>
@@ -226,12 +226,12 @@ export default function LeverageBoard({ matches }: Props) {
 
                 {/* Teams */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 text-sm font-semibold">
-                    <span>{getFlag(m.home)}</span>
-                    <span style={{ color: "var(--text)" }}>{m.home}</span>
+                  <div className="flex items-center gap-1.5 text-sm font-semibold flex-wrap">
+                    <Flag id={m.home} h={14} />
+                    <span style={{ color: "var(--text)" }}>{getName(m.home)}</span>
                     <span style={{ color: "var(--muted)", fontWeight: 400 }}>vs</span>
-                    <span>{getFlag(m.away)}</span>
-                    <span style={{ color: "var(--text)" }}>{m.away}</span>
+                    <Flag id={m.away} h={14} />
+                    <span style={{ color: "var(--text)" }}>{getName(m.away)}</span>
                   </div>
 
                   {hasProbs && (

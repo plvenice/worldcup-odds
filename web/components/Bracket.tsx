@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { Forecast, TeamDist, BracketR32Match, BracketLaterMatch, BracketFinal } from "@/lib/types";
-import { getFlag } from "@/lib/flags";
+import { Flag, getName } from "@/lib/flags";
 
 interface Props {
   forecast: Forecast;
@@ -15,17 +15,18 @@ function DistList({ dist, maxShow = 3 }: { dist: TeamDist[]; maxShow?: number })
   return (
     <div className="flex flex-col gap-0.5">
       {shown.map((t) => (
-        <div key={t.team} className="flex items-center gap-1.5">
-          <span className="text-sm">{getFlag(t.team)}</span>
+        <div key={t.team} className="flex items-center gap-1.5 min-w-0">
+          <Flag id={t.team} h={11} />
           <Link
             href={`/team?id=${t.team}`}
-            className="font-heading font-semibold hover:underline tabular"
-            style={{ color: "var(--text)", fontSize: 12, letterSpacing: "0.05em" }}
+            className="font-heading font-semibold hover:underline truncate"
+            style={{ color: "var(--text)", fontSize: 12.5 }}
+            title={getName(t.team)}
           >
-            {t.team}
+            {getName(t.team)}
           </Link>
           <span
-            className="tabular text-xs ml-auto"
+            className="tabular text-xs ml-auto pl-1 shrink-0"
             style={{ color: "var(--muted)" }}
           >
             {(t.p * 100).toFixed(0)}%
@@ -33,7 +34,7 @@ function DistList({ dist, maxShow = 3 }: { dist: TeamDist[]; maxShow?: number })
         </div>
       ))}
       {rest > 0 && (
-        <div className="text-xs" style={{ color: "var(--muted)", paddingLeft: 24 }}>
+        <div className="text-xs" style={{ color: "var(--muted)", paddingLeft: 20 }}>
           others {(rest * 100).toFixed(0)}%
         </div>
       )}
@@ -55,8 +56,8 @@ function R32Card({ match }: { match: BracketR32Match }) {
         border: "1px solid var(--border)",
         borderRadius: 8,
         padding: "8px 10px",
-        minWidth: 140,
-        maxWidth: 180,
+        minWidth: 168,
+        maxWidth: 210,
       }}
     >
       <div className="text-xs mb-1.5" style={{ color: "var(--muted)" }}>
@@ -90,8 +91,8 @@ function LaterCard({ match, label }: { match: BracketLaterMatch; label: string }
         border: "1px solid var(--border)",
         borderRadius: 8,
         padding: "8px 10px",
-        minWidth: 140,
-        maxWidth: 180,
+        minWidth: 168,
+        maxWidth: 210,
       }}
     >
       <div className="text-xs mb-1.5" style={{ color: "var(--muted)" }}>
@@ -110,8 +111,8 @@ function FinalCard({ match }: { match: BracketFinal }) {
         border: "1px solid var(--gold)",
         borderRadius: 8,
         padding: "8px 10px",
-        minWidth: 150,
-        maxWidth: 200,
+        minWidth: 180,
+        maxWidth: 230,
       }}
     >
       <div className="text-xs mb-1.5" style={{ color: "var(--gold)" }}>
@@ -138,7 +139,7 @@ export default function BracketView({ forecast }: Props) {
       </p>
 
       <div className="overflow-x-auto pb-3">
-        <div className="flex gap-4" style={{ minWidth: 900 }}>
+        <div className="flex gap-4" style={{ minWidth: 1040 }}>
           {/* R32 */}
           <div className="flex flex-col gap-2 shrink-0">
             <div className="font-heading font-bold text-xs uppercase tracking-widest mb-1" style={{ color: "var(--muted)" }}>
