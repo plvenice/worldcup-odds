@@ -1,0 +1,46 @@
+{
+  "_meta": {
+    "source": "Wikipedia 2026 FIFA World Cup knockout stage, fetched 2026-06-12",
+    "notes": "R32 slots: W=group winner, R=runner-up, T=third-place slot with allowed-group set. The exact third->slot mapping for a given combination of 8 qualifying groups comes from FIFA's 495-row allocation table, parsed into data/third_place_table.json by pipeline/wc26/wiki.py. r16/qf/sf/final reference match numbers."
+  },
+  "r32": [
+    {"match": 73, "home": {"type": "R", "group": "A"}, "away": {"type": "R", "group": "B"}, "date": "2026-06-28", "venue": "sofi"},
+    {"match": 74, "home": {"type": "W", "group": "E"}, "away": {"type": "T", "allowed": ["A", "B", "C", "D", "F"]}, "date": "2026-06-29", "venue": "gillette"},
+    {"match": 75, "home": {"type": "W", "group": "F"}, "away": {"type": "R", "group": "C"}, "date": "2026-06-29", "venue": "bbva"},
+    {"match": 76, "home": {"type": "W", "group": "C"}, "away": {"type": "R", "group": "F"}, "date": "2026-06-29", "venue": "nrg"},
+    {"match": 77, "home": {"type": "W", "group": "I"}, "away": {"type": "T", "allowed": ["C", "D", "F", "G", "H"]}, "date": "2026-06-30", "venue": "metlife"},
+    {"match": 78, "home": {"type": "R", "group": "E"}, "away": {"type": "R", "group": "I"}, "date": "2026-06-30", "venue": "att"},
+    {"match": 79, "home": {"type": "W", "group": "A"}, "away": {"type": "T", "allowed": ["C", "E", "F", "H", "I"]}, "date": "2026-06-30", "venue": "azteca"},
+    {"match": 80, "home": {"type": "W", "group": "L"}, "away": {"type": "T", "allowed": ["E", "H", "I", "J", "K"]}, "date": "2026-07-01", "venue": "mercedesbenz"},
+    {"match": 81, "home": {"type": "W", "group": "D"}, "away": {"type": "T", "allowed": ["B", "E", "F", "I", "J"]}, "date": "2026-07-01", "venue": "levis"},
+    {"match": 82, "home": {"type": "W", "group": "G"}, "away": {"type": "T", "allowed": ["A", "E", "H", "I", "J"]}, "date": "2026-07-01", "venue": "lumen"},
+    {"match": 83, "home": {"type": "R", "group": "K"}, "away": {"type": "R", "group": "L"}, "date": "2026-07-02", "venue": "bmo"},
+    {"match": 84, "home": {"type": "W", "group": "H"}, "away": {"type": "R", "group": "J"}, "date": "2026-07-02", "venue": "sofi"},
+    {"match": 85, "home": {"type": "W", "group": "B"}, "away": {"type": "T", "allowed": ["E", "F", "G", "I", "J"]}, "date": "2026-07-02", "venue": "bcplace"},
+    {"match": 86, "home": {"type": "W", "group": "J"}, "away": {"type": "R", "group": "H"}, "date": "2026-07-03", "venue": "hardrock"},
+    {"match": 87, "home": {"type": "W", "group": "K"}, "away": {"type": "T", "allowed": ["D", "E", "I", "J", "L"]}, "date": "2026-07-03", "venue": "arrowhead"},
+    {"match": 88, "home": {"type": "R", "group": "D"}, "away": {"type": "R", "group": "G"}, "date": "2026-07-03", "venue": "att"}
+  ],
+  "r16": [
+    {"match": 89, "home": 74, "away": 77, "date": "2026-07-04", "venue": "lincoln"},
+    {"match": 90, "home": 73, "away": 75, "date": "2026-07-04", "venue": "nrg"},
+    {"match": 91, "home": 76, "away": 78, "date": "2026-07-05", "venue": "metlife"},
+    {"match": 92, "home": 79, "away": 80, "date": "2026-07-05", "venue": "azteca"},
+    {"match": 93, "home": 83, "away": 84, "date": "2026-07-06", "venue": "att"},
+    {"match": 94, "home": 81, "away": 82, "date": "2026-07-06", "venue": "lumen"},
+    {"match": 95, "home": 86, "away": 88, "date": "2026-07-07", "venue": "mercedesbenz"},
+    {"match": 96, "home": 85, "away": 87, "date": "2026-07-07", "venue": "bcplace"}
+  ],
+  "qf": [
+    {"match": 97, "home": 89, "away": 90, "date": "2026-07-09", "venue": "gillette"},
+    {"match": 98, "home": 93, "away": 94, "date": "2026-07-10", "venue": "sofi"},
+    {"match": 99, "home": 91, "away": 92, "date": "2026-07-11", "venue": "hardrock"},
+    {"match": 100, "home": 95, "away": 96, "date": "2026-07-11", "venue": "arrowhead"}
+  ],
+  "sf": [
+    {"match": 101, "home": 97, "away": 98, "date": "2026-07-14", "venue": "att"},
+    {"match": 102, "home": 99, "away": 100, "date": "2026-07-15", "venue": "mercedesbenz"}
+  ],
+  "third_place": {"match": 103, "date": "2026-07-18", "venue": "hardrock"},
+  "final": {"match": 104, "date": "2026-07-19", "venue": "metlife"}
+}

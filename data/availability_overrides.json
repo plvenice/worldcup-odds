@@ -1,0 +1,7 @@
+{
+  "_meta": {
+    "notes": "Authoritative over API-Football injury data. Each entry docks the team's effective Elo while active. weight guide: franchise player 45, key starter 30, rotation starter 15. Set 'until' to a date (player returns) or null (out for tournament).",
+    "example": {"team": "FRA", "player": "Example Player", "weight": 45, "until": null, "reason": "hamstring, ruled out 6/10"}
+  },
+  "out": []
+}
