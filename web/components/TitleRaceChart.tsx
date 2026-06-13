@@ -7,7 +7,6 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  ReferenceLine,
   Cell,
   LineChart,
   Line,
@@ -49,6 +48,44 @@ export default function TitleRaceChart({ forecast, history }: Props) {
     }
     return row;
   });
+
+  // Bar shape: the model bar plus, when market data exists, a gold dot at the
+  // team's market-implied probability on the same axis scale (directly
+  // comparable to where the bar ends). pxPerPct = width/model is the global
+  // px-per-percent constant since the axis is linear from 0.
+  const BarWithMarketDot = (props: {
+    x?: number | string;
+    y?: number | string;
+    width?: number | string;
+    height?: number | string;
+    fill?: string;
+    payload?: { model?: number; market?: number };
+  }) => {
+    const x = Number(props.x ?? 0);
+    const y = Number(props.y ?? 0);
+    const width = Number(props.width ?? 0);
+    const height = Number(props.height ?? 0);
+    const model = Number(props.payload?.model ?? 0);
+    const market = props.payload?.market;
+    const pxPerPct = model > 0 ? width / model : 0;
+    const showDot =
+      hasMarket && market != null && Number.isFinite(market) && market > 0 && pxPerPct > 0;
+    return (
+      <g>
+        <rect x={x} y={y} width={width} height={height} rx={2.5} fill={props.fill} opacity={0.85} />
+        {showDot && (
+          <circle
+            cx={x + Number(market) * pxPerPct}
+            cy={y + height / 2}
+            r={4.5}
+            fill="var(--gold)"
+            stroke="#0B0F17"
+            strokeWidth={1.5}
+          />
+        )}
+      </g>
+    );
+  };
 
   // Custom bar label
   const renderCustomBarLabel = (props: {
@@ -195,22 +232,17 @@ export default function TitleRaceChart({ forecast, history }: Props) {
               tickLine={false}
             />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
-            <Bar dataKey="model" name="Model" radius={[0, 3, 3, 0]} label={renderCustomBarLabel}>
+            <Bar
+              dataKey="model"
+              name="Model"
+              label={renderCustomBarLabel}
+              shape={BarWithMarketDot}
+              isAnimationActive={false}
+            >
               {barData.map((entry, i) => (
-                <Cell key={entry.id} fill={teamColor(entry.id, i)} opacity={0.85} />
+                <Cell key={entry.id} fill={teamColor(entry.id, i)} />
               ))}
             </Bar>
-            {hasMarket &&
-              barData.map((entry) => (
-                <ReferenceLine
-                  key={`mkt-${entry.id}`}
-                  x={entry.market}
-                  stroke="var(--gold)"
-                  strokeWidth={2}
-                  strokeDasharray="3 2"
-                  label={false}
-                />
-              ))}
           </BarChart>
         </ResponsiveContainer>
       </div>
