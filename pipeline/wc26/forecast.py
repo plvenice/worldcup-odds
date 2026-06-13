@@ -160,6 +160,34 @@ def aggregate(state, res, nsims):
             rec["leverage_index"] = round(lev_index, 4)
         matches_out.append(rec)
 
+    # --- bracket slot occupant distributions (top 6 per side) ---
+    def top_dist(arr, k=6):
+        counts = np.bincount(arr, minlength=len(ids)) / n
+        order = np.argsort(-counts)[:k]
+        return [{"team": ids[i], "p": round(float(counts[i]), 4)}
+                for i in order if counts[i] > 0.001]
+
+    bracket_out = {"r32": []}
+    bdef = state["bracket_def"]
+    for m in bdef["r32"]:
+        h, a = res.r32_slots[m["match"]]
+        bracket_out["r32"].append({
+            "match": m["match"], "date": m["date"], "venue": m["venue"],
+            "home_slot": m["home"], "away_slot": m["away"],
+            "home_dist": top_dist(h), "away_dist": top_dist(a),
+            "winner_dist": top_dist(res.ko_winners[m["match"]]),
+        })
+    for rnd in ("r16", "qf", "sf"):
+        bracket_out[rnd] = [{
+            "match": m["match"], "date": m["date"], "venue": m["venue"],
+            "feeders": [m["home"], m["away"]],
+            "winner_dist": top_dist(res.ko_winners[m["match"]]),
+        } for m in bdef[rnd]]
+    bracket_out["final"] = {
+        "match": 104, "date": bdef["final"]["date"], "venue": bdef["final"]["venue"],
+        "winner_dist": top_dist(res.champion, k=12),
+    }
+
     return {
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "nsims": nsims,
@@ -167,6 +195,7 @@ def aggregate(state, res, nsims):
         "teams": sorted(teams_out, key=lambda x: -x["p_title"]),
         "groups": groups_out,
         "matches": matches_out,
+        "bracket": bracket_out,
     }
 
 

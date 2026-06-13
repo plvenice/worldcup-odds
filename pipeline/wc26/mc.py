@@ -32,6 +32,8 @@ class SimResult:
         self.group_pos = None        # (nsims, nteams) 1..4
         self.third_advanced = None   # (nsims, nteams) bool
         self.fixture_outcome = {}    # fixture_id -> (nsims,) int8 0=H,1=D,2=A
+        self.r32_slots = {}          # match_no -> (home_arr, away_arr) team idx
+        self.ko_winners = {}         # match_no -> (nsims,) winning team idx
 
 
 def sample_remaining_fixtures(fixtures, nsims, rng):
@@ -259,6 +261,7 @@ def simulate(state, nsims=50000, seed=None):
 
     for m in bdef["r32"]:
         h, a = r32_home[m["match"]], r32_away[m["match"]]
+        res.r32_slots[m["match"]] = (h, a)
         res.reach["r32"][sims, h] = True
         res.reach["r32"][sims, a] = True
         play(m["match"], h, a)
@@ -285,5 +288,6 @@ def simulate(state, nsims=50000, seed=None):
     champ = play(104, h, a, feeder=(fh, fa))
     res.champion = champ
     res.runner_up = np.where(champ == h, a, h).astype(np.int16)
+    res.ko_winners = winner_of
 
     return res
