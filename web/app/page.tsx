@@ -2,6 +2,7 @@
 
 import { useData } from "@/lib/useData";
 import Header from "@/components/Header";
+import LiveMatches from "@/components/LiveMatches";
 import TitleRaceChart from "@/components/TitleRaceChart";
 import LeverageBoard from "@/components/LeverageBoard";
 import Groups from "@/components/Groups";
@@ -15,6 +16,8 @@ export default function HomePage() {
       <Header forecast={forecast} loading={loading} lastFetched={lastFetched} />
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-3 py-4 flex flex-col gap-8">
+        <LiveMatches />
+
         {error && (
           <div
             className="rounded-lg px-4 py-3 text-sm"

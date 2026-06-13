@@ -31,6 +31,7 @@ jobs:
         working-directory: web
         env:
           BASE_PATH: /worldcup-odds
+          NEXT_PUBLIC_LIVE_URL: ${{ vars.LIVE_URL }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web/out
