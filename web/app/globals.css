@@ -1,0 +1,67 @@
+@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700&display=swap");
+@import "tailwindcss";
+
+:root {
+  --bg: #0B0F17;
+  --panel: #131A26;
+  --border: #1E2939;
+  --text: #E8EDF5;
+  --muted: #8B97A8;
+  --green: #00C26E;
+  --gold: #F5C342;
+  --red: #FF5C5C;
+  --blue: #4D9FFF;
+  --draw: #5B6B82;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-border: var(--border);
+  --color-txt: var(--text);
+  --color-muted: var(--muted);
+  --color-green: var(--green);
+  --color-gold: var(--gold);
+  --color-red: var(--red);
+  --color-blue: var(--blue);
+  --color-draw: var(--draw);
+  --font-heading: "Barlow Condensed", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+h1, h2, h3, h4, h5, .font-heading {
+  font-family: "Barlow Condensed", system-ui, sans-serif;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--panel);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
