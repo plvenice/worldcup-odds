@@ -266,22 +266,6 @@ export default function LeverageBoard({ matches }: Props) {
                     <span style={{ color: "var(--muted)", fontWeight: 400 }}>vs</span>
                     <Flag id={m.away} h={14} />
                     <span style={{ color: "var(--text)" }}>{getName(m.away)}</span>
-                    {m.market_probs && (
-                      <span
-                        title="Betting market blended into these odds"
-                        style={{
-                          fontSize: 9,
-                          fontWeight: 700,
-                          color: "var(--gold)",
-                          border: "1px solid var(--gold)",
-                          borderRadius: 3,
-                          padding: "0 4px",
-                          letterSpacing: "0.06em",
-                        }}
-                      >
-                        MKT
-                      </span>
-                    )}
                   </div>
 
                   {hasProbs && (
