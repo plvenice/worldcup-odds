@@ -53,3 +53,4 @@ jobs:
           git add odds_state.json market.json cache_fixtures.json 2>/dev/null || true
           git commit -m "refresh $(date -u +%FT%TZ)"
           git push --force "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" data
+# registered 2026-06-12
