@@ -76,10 +76,13 @@ function TeamContent() {
   );
   const market = forecast.market?.implied?.[id];
 
-  // history sparkline for this team
-  const series = history
+  // history sparkline for this team — stride-sampled to ≤180 render points
+  const MAX_RENDER_PTS = 180;
+  const allSeries = history
     .filter((r: HistoryRow) => r.team === id)
     .map((r) => ({ ts: r.ts, p: r.p_title * 100 }));
+  const stride = Math.max(1, Math.ceil(allSeries.length / MAX_RENDER_PTS));
+  const series = allSeries.filter((_, i) => i % stride === 0 || i === allSeries.length - 1);
 
   // baseline: overall leader's current probability
   const leaderTeam = forecast.teams[0];
