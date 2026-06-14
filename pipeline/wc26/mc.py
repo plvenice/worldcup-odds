@@ -11,6 +11,10 @@ Design notes:
   deterministic per bracket slot, so they're precomputed as slot constants.
 - Leverage comes free: each sim samples every remaining fixture, so
   P(outcome | fixture result) is a conditional mean over sim subsets.
+- When forecast.py computes DC attack/defense ratings, it stores lh_dc/la_dc
+  on each fixture. sample_remaining_fixtures uses those directly instead of
+  the Elo-based lambdas() call, giving asymmetric team profiles (high attack
+  vs. strong defence) that Elo alone cannot express.
 """
 import numpy as np
 from datetime import date
@@ -38,12 +42,20 @@ class SimResult:
 
 def sample_remaining_fixtures(fixtures, nsims, rng):
     """For each unplayed fixture, sample (hg, ag) per sim from its DC matrix.
-    Mutates nothing; returns dict fixture_id -> (hg_arr, ag_arr)."""
+    Mutates nothing; returns dict fixture_id -> (hg_arr, ag_arr).
+
+    Uses DC attack/defense lambdas (lh_dc, la_dc) when available; falls back
+    to Elo-based lambdas() otherwise.
+    """
     sampled = {}
     for fx in fixtures:
         if fx["played"]:
             continue
-        lh, la = lambdas(fx["dr"], fx["total_factor"])
+        # DC lambdas when available; Elo-based fallback
+        if fx.get("lh_dc") is not None and fx.get("la_dc") is not None:
+            lh, la = fx["lh_dc"], fx["la_dc"]
+        else:
+            lh, la = lambdas(fx["dr"], fx["total_factor"])
         m = score_matrix(float(lh), float(la))
         # if the match is priced, bend the scoreline distribution so its W/D/L
         # matches the blended (market + model) outcome — the blend then flows

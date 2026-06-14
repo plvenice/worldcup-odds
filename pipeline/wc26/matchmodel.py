@@ -21,6 +21,12 @@ ET_LAMBDA_FACTOR = 0.30     # extra time ~30 min at slightly reduced intensity
 # knockout odds, and the tournament Monte Carlo all inherit it consistently.
 MODEL_TEMPERATURE = 1.40
 
+# Tournament K-factors for Elo updates. Higher than eloratings.net's
+# international baseline (60) because WC matches are peak-preparation
+# competitive games where each result is high-signal.
+ELO_K_GROUP    = 75.0   # group stage matches
+ELO_K_KNOCKOUT = 90.0   # knockout results: definitive tournament form
+
 
 def lambdas(dr, total_factor=1.0):
     """Expected goals (home-ish, away-ish) given adjusted Elo difference dr.
@@ -71,6 +77,13 @@ def outcome_probs(dr, total_factor=1.0, temperature=None):
     """(p_home_win, p_draw, p_away_win) over 90 minutes."""
     lh, la = lambdas(float(dr), total_factor)
     m = score_matrix(lh, la, temperature=temperature)
+    return float(np.tril(m, -1).sum()), float(np.trace(m)), float(np.triu(m, 1).sum())
+
+
+def outcome_probs_lhla(lh, la, temperature=None):
+    """(p_home_win, p_draw, p_away_win) from pre-computed expected goals.
+    Use when DC ratings supply lh/la directly instead of going through Elo."""
+    m = score_matrix(float(lh), float(la), temperature=temperature)
     return float(np.tril(m, -1).sum()), float(np.trace(m)), float(np.triu(m, 1).sum())
 
 

@@ -17,12 +17,30 @@ STATE = data.ROOT / "out" / "odds_state.json"
 OUTRIGHT_DAILY_CAP = 8  # ~240 credits/month — well within 500 free
 H2H_DAILY_CAP = 3
 
+
+def _load_tuned_blend_weight(fallback=0.65, min_n=10):
+    """Return calibrated blend weight if enough data exists, else fallback.
+
+    Reads out/blend_optimum.json written by pipeline/backtest/calibrate_blend.py.
+    Only kicks in once min_n completed priced matches have been scored.
+    """
+    p = STATE.parent / "blend_optimum.json"
+    try:
+        if p.exists():
+            d = json.loads(p.read_text(encoding="utf-8"))
+            if d.get("n", 0) >= min_n:
+                return float(d["weight"])
+    except Exception:
+        pass
+    return fallback
+
+
 # Weight on the betting market when blending market match odds with the
 # (calibrated) model. Markets reliably beat structural models on match
-# outcomes, so we lean market. Not backtested against historical odds (we
-# couldn't source 2018/2022 closing lines for free) — a principled default
-# in the 0.6–0.7 range that practice supports; tune here if needed.
-MARKET_BLEND_WEIGHT = 0.65
+# outcomes, so we lean market. Starts at the principled default (0.65);
+# after MIN_SAMPLES=10 completed priced matches, calibrate_blend.py tunes
+# this empirically and writes out/blend_optimum.json which overrides here.
+MARKET_BLEND_WEIGHT = _load_tuned_blend_weight()
 
 NAME_TO_ID = {
     "mexico": "MEX", "south africa": "RSA", "south korea": "KOR",

@@ -18,6 +18,7 @@ from . import data
 API = "https://en.wikipedia.org/w/api.php"
 UA = {"User-Agent": "worldcup-odds/1.0 (tournament probability model)"}
 CACHE = data.DATA / "cache_fixtures.json"
+KNOCKOUT_CACHE = data.DATA / "cache_knockout.json"
 
 GROUPS = "ABCDEFGHIJKL"
 
@@ -168,3 +169,52 @@ def fetch_group_fixtures(use_cache_on_error=True):
                 cached = json.load(f)
             return cached["fixtures"], f"cache ({e})"
         raise
+
+
+def fetch_knockout_fixtures(use_cache_on_error=True):
+    """Played knockout fixtures from the Wikipedia knockout stage page.
+
+    Returns a list of fixture dicts (same schema as group fixtures) for
+    completed knockout matches only. Returns [] silently if the page
+    doesn't exist yet (before the knockout stage begins Jun 28).
+    """
+    by_id, _ = data.teams()
+    valid_ids = set(by_id)
+    try:
+        texts = _wikitext_many(["2026 FIFA World Cup knockout stage"])
+        wikitext = texts.get("2026 FIFA World Cup knockout stage", "")
+        fixtures = []
+        chunks = _BOX_SPLIT_RE.split(wikitext)[1:]
+        for n_chunk, chunk in enumerate(chunks, 1):
+            chunk = chunk[:4000]
+            t1 = _parse_team(_field(chunk, "team1"))
+            t2 = _parse_team(_field(chunk, "team2"))
+            if not t1 or not t2 or t1 not in valid_ids or t2 not in valid_ids:
+                continue
+            score = _field(chunk, "score")
+            sm = _SCORE_RE.search(score)
+            if not sm:
+                continue  # upcoming match — skip
+            fixtures.append({
+                "id":     f"KO{n_chunk}",
+                "group":  None,
+                "home":   t1,
+                "away":   t2,
+                "date":   _parse_date(_field(chunk, "date")),
+                "venue":  _parse_stadium(_field(chunk, "stadium")),
+                "played": True,
+                "hg":     int(sm.group(1)),
+                "ag":     int(sm.group(2)),
+            })
+        with open(KNOCKOUT_CACHE, "w", encoding="utf-8") as f:
+            json.dump({"fetched_at": datetime.utcnow().isoformat(),
+                       "fixtures": fixtures}, f, indent=1)
+        return fixtures
+    except Exception:
+        if use_cache_on_error and KNOCKOUT_CACHE.exists():
+            try:
+                with open(KNOCKOUT_CACHE, encoding="utf-8") as f:
+                    return json.load(f)["fixtures"]
+            except Exception:
+                pass
+        return []

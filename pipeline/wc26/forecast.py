@@ -10,13 +10,42 @@ import numpy as np
 from datetime import date, datetime, timezone
 from pathlib import Path
 
-from . import data, factors, wiki, weather, odds
-from .matchmodel import elo_update, outcome_probs, blend_outcome, lambdas
+from . import data, dc_ratings as dc_mod, factors, wiki, weather, odds
+from .matchmodel import (elo_update, outcome_probs, outcome_probs_lhla,
+                         blend_outcome, lambdas, ELO_K_GROUP, ELO_K_KNOCKOUT)
 from . import standings as st
 from .mc import simulate
 
 OUT = data.ROOT / "out"
+BLEND_LOG = OUT / "blend_log.json"
 WEATHER_LOOKAHEAD_DAYS = 8
+
+
+def _update_blend_log(fixtures):
+    """Append new priced fixtures to blend_log.json; fill actual outcomes on completion."""
+    try:
+        log = json.loads(BLEND_LOG.read_text(encoding="utf-8")) if BLEND_LOG.exists() else {}
+    except Exception:
+        log = {}
+    entries = {e["id"]: e for e in log.get("entries", [])}
+    now = datetime.now(timezone.utc).isoformat()
+    for fx in fixtures:
+        fid = fx["id"]
+        if not fx["played"] and fx.get("model_probs") and fx.get("market_probs"):
+            if fid not in entries:
+                entries[fid] = {
+                    "id": fid, "home": fx["home"], "away": fx["away"],
+                    "model_probs": fx["model_probs"],
+                    "market_probs": fx["market_probs"],
+                    "logged_at": now, "actual": None,
+                }
+        elif fx["played"] and fid in entries and entries[fid]["actual"] is None:
+            hg, ag = fx.get("hg"), fx.get("ag")
+            if hg is not None and ag is not None:
+                entries[fid]["actual"] = 0 if hg > ag else (1 if hg == ag else 2)
+    BLEND_LOG.parent.mkdir(exist_ok=True)
+    BLEND_LOG.write_text(json.dumps({"entries": list(entries.values())}, indent=1),
+                         encoding="utf-8")
 
 
 def build_state(nsims_note=None, fetch_weather=True, h2h=None):
@@ -27,7 +56,7 @@ def build_state(nsims_note=None, fetch_weather=True, h2h=None):
     fixtures, source = wiki.fetch_group_fixtures()
     fixtures.sort(key=lambda f: (f["date"] or "9999", f["id"]))
 
-    # --- live Elo: replay real results chronologically from seeds ---
+    # --- live Elo: replay group results with tournament K-factor ---
     elo = {t: float(by_id[t]["elo_seed"]) for t in ids}
     last_played = {}   # team -> (date, venue_id)
     for fx in fixtures:
@@ -36,12 +65,40 @@ def build_state(nsims_note=None, fetch_weather=True, h2h=None):
         v = venues.get(fx["venue"]) or {}
         h_host = by_id[fx["home"]].get("host") and v.get("country") == fx["home"]
         a_host = by_id[fx["away"]].get("host") and v.get("country") == fx["away"]
-        dr_extra = factors.HOST_ADV * (1 if h_host else 0) - factors.HOST_ADV * (1 if a_host else 0)
-        new_h = elo_update(elo[fx["home"]], elo[fx["away"]], fx["hg"], fx["ag"], dr_extra)
-        new_a = elo_update(elo[fx["away"]], elo[fx["home"]], fx["ag"], fx["hg"], -dr_extra)
+        dr_extra = (factors.HOST_ADV * (1 if h_host else 0)
+                    - factors.HOST_ADV * (1 if a_host else 0))
+        new_h = elo_update(elo[fx["home"]], elo[fx["away"]],
+                           fx["hg"], fx["ag"], dr_extra, k=ELO_K_GROUP)
+        new_a = elo_update(elo[fx["away"]], elo[fx["home"]],
+                           fx["ag"], fx["hg"], -dr_extra, k=ELO_K_GROUP)
         elo[fx["home"]], elo[fx["away"]] = new_h, new_a
         for t in (fx["home"], fx["away"]):
             last_played[t] = (fx["date"], fx["venue"])
+
+    # --- live Elo: replay knockout results (higher K; page is empty before Jun 28) ---
+    ko_fixtures = wiki.fetch_knockout_fixtures()
+    for fx in ko_fixtures:
+        if not fx["played"]:
+            continue
+        v = venues.get(fx["venue"]) or {}
+        h_host = by_id.get(fx["home"], {}).get("host") and v.get("country") == fx["home"]
+        a_host = by_id.get(fx["away"], {}).get("host") and v.get("country") == fx["away"]
+        dr_extra = (factors.HOST_ADV * (1 if h_host else 0)
+                    - factors.HOST_ADV * (1 if a_host else 0))
+        if fx["home"] in elo and fx["away"] in elo:
+            new_h = elo_update(elo[fx["home"]], elo[fx["away"]],
+                               fx["hg"], fx["ag"], dr_extra, k=ELO_K_KNOCKOUT)
+            new_a = elo_update(elo[fx["away"]], elo[fx["home"]],
+                               fx["ag"], fx["hg"], -dr_extra, k=ELO_K_KNOCKOUT)
+            elo[fx["home"]], elo[fx["away"]] = new_h, new_a
+            for t in (fx["home"], fx["away"]):
+                last_played[t] = (fx["date"], fx["venue"])
+
+    # --- Dixon-Coles EM: fit attack/defense from all completed matches ---
+    dc_ratings = dc_mod.fit(
+        [f for f in fixtures if f["played"]] + [f for f in ko_fixtures if f["played"]],
+        ids, {t: elo[t] for t in ids},
+    )
 
     # --- per-fixture adjustments for unplayed fixtures ---
     today = date.today()
@@ -53,6 +110,9 @@ def build_state(nsims_note=None, fetch_weather=True, h2h=None):
         if v is None:
             fx["dr"] = elo[fx["home"]] - elo[fx["away"]]
             fx["total_factor"] = 1.0
+            lh_dc, la_dc = dc_mod.dc_lambdas(fx["home"], fx["away"], dc_ratings)
+            fx["lh_dc"] = round(lh_dc, 4)
+            fx["la_dc"] = round(la_dc, 4)
             continue
         ctx = {"overrides": overrides, "on_date": today}
         rest, prev = [], []
@@ -75,6 +135,9 @@ def build_state(nsims_note=None, fetch_weather=True, h2h=None):
         fx["dr"] = (elo[fx["home"]] - elo[fx["away"]]) + dr_adj
         fx["total_factor"] = total_factor
         attributions[fx["id"]] = att
+        lh_dc, la_dc = dc_mod.dc_lambdas(fx["home"], fx["away"], dc_ratings, total_factor)
+        fx["lh_dc"] = round(lh_dc, 4)
+        fx["la_dc"] = round(la_dc, 4)
 
     # --- market blend: fold bookmaker match odds into each priced fixture ---
     market_by_pair = {}
@@ -85,12 +148,15 @@ def build_state(nsims_note=None, fetch_weather=True, h2h=None):
     for fx in fixtures:
         if fx["played"]:
             continue
-        model = outcome_probs(fx["dr"], fx.get("total_factor", 1.0))
+        # DC-based model probs when available; Elo fallback otherwise
+        if fx.get("lh_dc") is not None and fx.get("la_dc") is not None:
+            model = outcome_probs_lhla(fx["lh_dc"], fx["la_dc"])
+        else:
+            model = outcome_probs(fx["dr"], fx.get("total_factor", 1.0))
         fx["model_probs"] = [round(x, 4) for x in model]
         mp = market_by_pair.get(frozenset((fx["home"], fx["away"])))
         if not mp:
             continue
-        # orient market to this fixture's home/away
         if mp["home"] == fx["home"]:
             market = (mp["ph"], mp["pd"], mp["pa"])
         else:
@@ -112,6 +178,7 @@ def build_state(nsims_note=None, fetch_weather=True, h2h=None):
         "source": source,
         "attributions": attributions,
         "n_blended": n_blended,
+        "dc_ratings": dc_ratings,
     }
     return state
 
@@ -128,10 +195,13 @@ def aggregate(state, res, nsims):
     teams_out = []
     for t in ids:
         i = tidx[t]
+        dc = state.get("dc_ratings", {}).get(t, {})
         teams_out.append({
             "id": t, "name": by_id[t]["name"], "group": by_id[t]["group"],
             "elo": round(state["elo"][t], 1),
             "elo_seed": by_id[t]["elo_seed"],
+            "attack": dc.get("attack"),
+            "defense": dc.get("defense"),
             "p_title": champ_count[i] / n,
             "p_final": float(final_p[i]),
             "p_sf": float(res.reach["sf"][:, i].mean()),
@@ -161,8 +231,6 @@ def aggregate(state, res, nsims):
         rec = {k: fx.get(k) for k in
                ("id", "group", "home", "away", "date", "venue", "played", "hg", "ag")}
         if not fx["played"]:
-            # headline probs = blended (market + model) when the match is priced,
-            # else the calibrated model
             eff = fx.get("blend_probs") or fx.get("model_probs") \
                 or [round(x, 4) for x in outcome_probs(fx["dr"], fx["total_factor"])]
             rec["probs"] = {"home": eff[0], "draw": eff[1], "away": eff[2]}
@@ -171,8 +239,11 @@ def aggregate(state, res, nsims):
                 mk = fx["market_probs"]
                 rec["model_probs"] = {"home": mo[0], "draw": mo[1], "away": mo[2]}
                 rec["market_probs"] = {"home": mk[0], "draw": mk[1], "away": mk[2]}
-            # pre-match expected goals — inputs for the live in-match model
-            lh, la = lambdas(fx["dr"], fx.get("total_factor", 1.0))
+            # pre-match expected goals: prefer DC lambdas; fall back to Elo
+            if fx.get("lh_dc") is not None:
+                lh, la = fx["lh_dc"], fx["la_dc"]
+            else:
+                lh, la = lambdas(fx["dr"], fx.get("total_factor", 1.0))
             rec["lambdas"] = [round(float(lh), 3), round(float(la), 3)]
             rec["attribution"] = state["attributions"].get(fx["id"], {})
             out = res.fixture_outcome[fx["id"]]
@@ -238,8 +309,6 @@ def aggregate(state, res, nsims):
 def run(nsims=50000, seed=None, fetch_weather=True):
     OUT.mkdir(exist_ok=True)
 
-    # market match odds (h2h): fresh pull if budget allows, else last snapshot
-    # (carried on the data branch across runs). Feeds the blend in build_state.
     h2h = odds.fetch_h2h()
     h2h_file = OUT / "market_h2h.json"
     if h2h:
@@ -248,10 +317,13 @@ def run(nsims=50000, seed=None, fetch_weather=True):
         h2h = json.loads(h2h_file.read_text(encoding="utf-8"))
 
     state = build_state(fetch_weather=fetch_weather, h2h=h2h)
+
+    # log pre-match probs for blend calibration
+    _update_blend_log(state["fixtures"])
+
     res = simulate(state, nsims=nsims, seed=seed)
     fc = aggregate(state, res, nsims)
 
-    # outright title market (display line on the title race chart)
     market = odds.fetch_outrights()
     mfile = OUT / "market.json"
     if market:
