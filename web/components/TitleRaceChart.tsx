@@ -50,13 +50,31 @@ export default function TitleRaceChart({ forecast, history, liveTitleUpdates = {
   }));
 
   // History line chart — top 8 teams
-  const top8 = forecast.teams.slice(0, 8).map((t) => t.id);
-  const timestamps = getTimestamps(history);
-  const lineData = timestamps.map((ts) => {
+  const top8 = teamsWithLive.slice(0, 8).map((t) => t.id);
+  const top8Set = new Set(top8);
+
+  // O(1) lookup: ts → team → p_title (replaces O(n) find() inside map)
+  const histLookup = new Map<string, Map<string, number>>();
+  for (const h of history) {
+    if (!top8Set.has(h.team)) continue;
+    if (!histLookup.has(h.ts)) histLookup.set(h.ts, new Map());
+    histLookup.get(h.ts)!.set(h.team, parseFloat(fmtPctNum(h.p_title)));
+  }
+
+  const allTimestamps = getTimestamps(history);
+
+  // Stride-sample to ≤180 render points as history grows; always keep last point
+  const MAX_RENDER_PTS = 180;
+  const stride = Math.max(1, Math.ceil(allTimestamps.length / MAX_RENDER_PTS));
+  const sampledTimestamps = allTimestamps.filter(
+    (_, i) => i % stride === 0 || i === allTimestamps.length - 1
+  );
+
+  const lineData = sampledTimestamps.map((ts) => {
     const row: Record<string, number | string> = { ts };
+    const teamMap = histLookup.get(ts);
     for (const tid of top8) {
-      const entry = history.find((h) => h.ts === ts && h.team === tid);
-      row[tid] = entry ? parseFloat(fmtPctNum(entry.p_title)) : 0;
+      row[tid] = teamMap?.get(tid) ?? 0;
     }
     return row;
   });
