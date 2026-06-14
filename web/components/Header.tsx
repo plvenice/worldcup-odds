@@ -9,9 +9,10 @@ interface Props {
   forecast: Forecast | null;
   loading: boolean;
   lastFetched: Date | null;
+  onInfoClick: () => void;
 }
 
-export default function Header({ forecast, loading, lastFetched }: Props) {
+export default function Header({ forecast, loading, lastFetched, onInfoClick }: Props) {
   const top6 = forecast?.teams.slice(0, 6) ?? [];
   const minsAgo = lastFetched ? minutesAgo(forecast?.generated_at ?? lastFetched.toISOString()) : null;
 
@@ -37,7 +38,23 @@ export default function Header({ forecast, loading, lastFetched }: Props) {
             </span>
           </div>
 
-          <div className="flex items-center gap-2 text-xs" style={{ color: "var(--muted)" }}>
+          <div className="flex items-center gap-3 text-xs" style={{ color: "var(--muted)" }}>
+            <button
+              onClick={onInfoClick}
+              className="flex items-center gap-1 font-heading font-semibold uppercase tracking-wide hover:opacity-80 transition-opacity"
+              style={{
+                color: "var(--muted)",
+                background: "none",
+                border: "1px solid var(--border)",
+                borderRadius: 999,
+                padding: "2px 10px",
+                cursor: "pointer",
+                fontSize: 10,
+                letterSpacing: "0.06em",
+              }}
+            >
+              How it works
+            </button>
             {loading && (
               <span className="animate-pulse" style={{ color: "var(--green)" }}>
                 ⟳ Updating...
