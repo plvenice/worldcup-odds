@@ -317,6 +317,7 @@ export default function TitleRaceChart({ forecast, history, liveTitleUpdates = {
                 `${Number(value).toFixed(1)}%`,
                 getName(String(name)),
               ]}
+              labelFormatter={(label) => fmtShortDate(String(label))}
               contentStyle={{
                 background: "var(--panel)",
                 border: "1px solid var(--border)",
