@@ -57,7 +57,7 @@ const NAV_ITEMS = [
 ];
 
 export default function HomePage() {
-  const { forecast, history, loading, error, lastFetched, liveTitleUpdates } = useData();
+  const { forecast, history, loading, error, lastFetched, liveTitleUpdates, liveForecast } = useData();
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--bg)" }}>
@@ -124,7 +124,7 @@ export default function HomePage() {
               <BracketView forecast={forecast} />
             </div>
             <div id="groups">
-              <Groups forecast={forecast} />
+              <Groups forecast={forecast} liveForecast={liveForecast} />
             </div>
             <div id="leverage">
               <LeverageBoard matches={forecast.matches} />
