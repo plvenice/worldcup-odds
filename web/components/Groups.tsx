@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import type { Forecast, GroupRow } from "@/lib/types";
+import type { Forecast, GroupRow, LiveForecast } from "@/lib/types";
 import { Flag, getName } from "@/lib/flags";
 import { fmtPct } from "@/lib/utils";
 
 interface Props {
   forecast: Forecast;
+  liveForecast?: LiveForecast | null;
 }
 
 function advColor(p: number): string {
@@ -15,15 +16,27 @@ function advColor(p: number): string {
   return "var(--draw)";
 }
 
-function AdvanceBar({ team, forecast }: { team: string; forecast: Forecast }) {
+function AdvanceBar({
+  team,
+  forecast,
+  liveForecast,
+}: {
+  team: string;
+  forecast: Forecast;
+  liveForecast?: LiveForecast | null;
+}) {
   const t = forecast.teams.find((t) => t.id === team);
   if (!t) return null;
 
-  const barWidth = Math.round(t.p_advance * 100);
-  const gwPct   = Math.round(t.p_group_win * 100);
-  const gsPct   = Math.round(t.p_group_second * 100);
-  const taPct   = Math.round(t.p_third_advance * 100);
-  const color   = advColor(t.p_advance);
+  const live = liveForecast?.available ? liveForecast.teams?.[team] : null;
+
+  const pAdvance     = live ? live.p_advance      : t.p_advance;
+  const pGroupWin    = live ? live.p_group_win    : t.p_group_win;
+  const pGroupSecond = live ? live.p_group_second : t.p_group_second;
+  const pThirdAdv    = live ? live.p_third_advance : t.p_third_advance;
+
+  const barWidth = Math.round(pAdvance * 100);
+  const color    = advColor(pAdvance);
 
   return (
     <div>
@@ -37,16 +50,24 @@ function AdvanceBar({ team, forecast }: { team: string; forecast: Forecast }) {
         />
       </div>
       <div className="flex items-center justify-between mt-1">
-        {/* Advance % stacked over "adv" label */}
-        <div className="flex flex-col items-center leading-none" style={{ minWidth: 38 }}>
-          <span className="tabular font-bold text-xs" style={{ color }}>
-            {fmtPct(t.p_advance)}
-          </span>
-          <span style={{ color: "var(--muted)", fontSize: 8.5, marginTop: 1 }}>adv</span>
+        <div className="flex items-center gap-1 leading-none" style={{ minWidth: 38 }}>
+          <div className="flex flex-col items-center">
+            <span className="tabular font-bold text-xs" style={{ color }}>
+              {fmtPct(pAdvance)}
+            </span>
+            <span style={{ color: "var(--muted)", fontSize: 8.5, marginTop: 1 }}>adv</span>
+          </div>
+          {live && (
+            <span
+              className="font-heading font-bold uppercase"
+              style={{ color: "var(--green)", fontSize: 7, letterSpacing: "0.05em" }}
+            >
+              LIVE
+            </span>
+          )}
         </div>
-        {/* Breakdown */}
         <span style={{ color: "var(--muted)", fontSize: 9.5, whiteSpace: "nowrap" }}>
-          1st {gwPct}% · 2nd {gsPct}% · 3rd {taPct}%
+          1st {Math.round(pGroupWin * 100)}% · 2nd {Math.round(pGroupSecond * 100)}% · 3rd {Math.round(pThirdAdv * 100)}%
         </span>
       </div>
     </div>
@@ -57,31 +78,49 @@ function GroupCard({
   groupName,
   rows,
   forecast,
+  liveForecast,
 }: {
   groupName: string;
   rows: GroupRow[];
   forecast: Forecast;
+  liveForecast?: LiveForecast | null;
 }) {
+  const isLive = liveForecast?.available &&
+    liveForecast.groups_affected?.includes(groupName);
+
   return (
     <div
       style={{
         background: "var(--panel)",
-        border: "1px solid var(--border)",
+        border: `1px solid ${isLive ? "var(--green)" : "var(--border)"}`,
         borderRadius: 12,
         overflow: "hidden",
       }}
     >
       <div
-        className="px-3 py-2 font-heading font-bold text-base tracking-widest uppercase"
+        className="px-3 py-2 flex items-center justify-between font-heading font-bold text-base tracking-widest uppercase"
         style={{ color: "var(--gold)", borderBottom: "1px solid var(--border)" }}
       >
-        Group {groupName}
+        <span>Group {groupName}</span>
+        {isLive && (
+          <span
+            className="font-heading font-bold uppercase"
+            style={{
+              color: "var(--green)",
+              fontSize: 9,
+              letterSpacing: "0.08em",
+              border: "1px solid var(--green)",
+              borderRadius: 4,
+              padding: "1px 4px",
+            }}
+          >
+            LIVE
+          </span>
+        )}
       </div>
       <table className="w-full text-xs tabular" style={{ tableLayout: "fixed" }}>
         <colgroup>
-          {/* Team column: takes remaining space */}
           <col style={{ width: "auto" }} />
-          {/* Stat columns: fixed narrow */}
           <col style={{ width: 22 }} />
           <col style={{ width: 30 }} />
           <col style={{ width: 28 }} />
@@ -122,7 +161,11 @@ function GroupCard({
                   </div>
                   {teamForecast && (
                     <div className="mt-1.5">
-                      <AdvanceBar team={row.team} forecast={forecast} />
+                      <AdvanceBar
+                        team={row.team}
+                        forecast={forecast}
+                        liveForecast={liveForecast}
+                      />
                     </div>
                   )}
                 </td>
@@ -147,10 +190,9 @@ function GroupCard({
   );
 }
 
-export default function Groups({ forecast }: Props) {
+export default function Groups({ forecast, liveForecast }: Props) {
   const groupKeys = Object.keys(forecast.groups).sort();
 
-  // Sort group cards by the highest p_title in the group (most interesting groups first)
   const sortedGroups = groupKeys.slice().sort((a, b) => {
     const bestA = Math.max(
       ...forecast.groups[a].map(
@@ -180,6 +222,7 @@ export default function Groups({ forecast }: Props) {
             groupName={g}
             rows={forecast.groups[g]}
             forecast={forecast}
+            liveForecast={liveForecast}
           />
         ))}
       </div>
