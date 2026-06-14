@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import type { Forecast, HistoryRow } from "./types";
+import type { Forecast, HistoryRow, LiveForecast } from "./types";
 import { parseCsv } from "./utils";
 
 const REMOTE_BASE =
@@ -9,8 +9,8 @@ const REMOTE_BASE =
   "https://raw.githubusercontent.com/plvenice/worldcup-odds/data";
 
 const FALLBACK_BASE = "/data";
-const REFRESH_MS = 5 * 60 * 1000; // 5 minutes
-const LIVE_REFRESH_MS = 20 * 1000; // 20 seconds — same cadence as LiveMatches poll
+const REFRESH_MS = 5 * 60 * 1000;
+const LIVE_REFRESH_MS = 20 * 1000;
 const LIVE_URL = (process.env.NEXT_PUBLIC_LIVE_URL ?? "").replace(/\/$/, "");
 
 async function fetchWithFallback(path: string): Promise<string> {
@@ -34,9 +34,8 @@ export interface DataState {
   loading: boolean;
   error: string | null;
   lastFetched: Date | null;
-  // Live title updates: team_id -> conditional p_title given current in-match state.
-  // Non-empty only when at least one match is live and the worker has leverage data.
   liveTitleUpdates: Record<string, number>;
+  liveForecast: LiveForecast | null;
 }
 
 export function useData(): DataState & { refresh: () => void } {
@@ -47,6 +46,7 @@ export function useData(): DataState & { refresh: () => void } {
     error: null,
     lastFetched: null,
     liveTitleUpdates: {},
+    liveForecast: null,
   });
 
   const load = useCallback(async () => {
@@ -75,17 +75,29 @@ export function useData(): DataState & { refresh: () => void } {
     }
   }, []);
 
-  // Poll the live worker for title_updates independently of the forecast refresh.
   const pollLive = useCallback(async () => {
     if (!LIVE_URL) return;
     try {
-      const res = await fetch(`${LIVE_URL}/live.json`, { cache: "no-store" });
-      if (!res.ok) return;
-      const j = await res.json();
-      const updates: Record<string, number> = j?.live ? (j.title_updates ?? {}) : {};
-      setState((s) => ({ ...s, liveTitleUpdates: updates }));
+      const [liveRes, liveFcRes] = await Promise.all([
+        fetch(`${LIVE_URL}/live.json`, { cache: "no-store" }),
+        fetch(`${LIVE_URL}/live_forecast.json`, { cache: "no-store" }),
+      ]);
+
+      const updates: Record<string, number> = {};
+      if (liveRes.ok) {
+        const j = await liveRes.json();
+        if (j?.live) Object.assign(updates, j.title_updates ?? {});
+      }
+
+      let liveForecast: LiveForecast | null = null;
+      if (liveFcRes.ok) {
+        const j: LiveForecast = await liveFcRes.json();
+        if (j?.available) liveForecast = j;
+      }
+
+      setState((s) => ({ ...s, liveTitleUpdates: updates, liveForecast }));
     } catch {
-      /* worker unreachable — keep last known state */
+      /* worker unreachable -- keep last known state */
     }
   }, []);
 
