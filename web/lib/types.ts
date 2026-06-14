@@ -139,3 +139,26 @@ export interface HistoryRow {
   p_advance: number;
   elo: number;
 }
+
+export interface LiveTeamProbs {
+  p_title: number;
+  p_final: number;
+  p_sf: number;
+  p_qf: number;
+  p_r16: number;
+  p_r32: number;
+  p_group_win: number;
+  p_group_second: number;
+  p_third_advance: number;
+  p_advance: number;
+}
+
+export interface LiveForecast {
+  available: boolean;
+  generated_at?: string;
+  nsims?: number;
+  teams?: Record<string, LiveTeamProbs>;
+  live_teams?: string[];
+  groups_affected?: string[];
+  elapsed_s?: number;
+}
