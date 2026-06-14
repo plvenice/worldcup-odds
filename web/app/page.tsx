@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useData } from "@/lib/useData";
 import Header from "@/components/Header";
 import LiveMatches from "@/components/LiveMatches";
@@ -7,6 +8,7 @@ import TitleRaceChart from "@/components/TitleRaceChart";
 import LeverageBoard from "@/components/LeverageBoard";
 import Groups from "@/components/Groups";
 import BracketView from "@/components/Bracket";
+import InfoModal from "@/components/InfoModal";
 
 const NAV_ITEMS = [
   {
@@ -58,10 +60,12 @@ const NAV_ITEMS = [
 
 export default function HomePage() {
   const { forecast, history, loading, error, lastFetched, liveTitleUpdates, liveForecast } = useData();
+  const [showInfo, setShowInfo] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "var(--bg)" }}>
-      <Header forecast={forecast} loading={loading} lastFetched={lastFetched} />
+      <Header forecast={forecast} loading={loading} lastFetched={lastFetched} onInfoClick={() => setShowInfo(true)} />
+      {showInfo && <InfoModal onClose={() => setShowInfo(false)} />}
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-3 py-4 flex flex-col gap-8">
         <LiveMatches />
