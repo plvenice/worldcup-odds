@@ -50,21 +50,11 @@ function AdvanceBar({
         />
       </div>
       <div className="flex items-center justify-between mt-1">
-        <div className="flex items-center gap-1 leading-none" style={{ minWidth: 38 }}>
-          <div className="flex flex-col items-center">
-            <span className="tabular font-bold text-xs" style={{ color }}>
-              {fmtPct(pAdvance)}
-            </span>
-            <span style={{ color: "var(--muted)", fontSize: 8.5, marginTop: 1 }}>adv</span>
-          </div>
-          {live && (
-            <span
-              className="font-heading font-bold uppercase"
-              style={{ color: "var(--green)", fontSize: 7, letterSpacing: "0.05em" }}
-            >
-              LIVE
-            </span>
-          )}
+        <div className="flex flex-col items-center leading-none" style={{ minWidth: 38 }}>
+          <span className="tabular font-bold text-xs" style={{ color }}>
+            {fmtPct(pAdvance)}
+          </span>
+          <span style={{ color: "var(--muted)", fontSize: 8.5, marginTop: 1 }}>adv</span>
         </div>
         <span style={{ color: "var(--muted)", fontSize: 9.5, whiteSpace: "nowrap" }}>
           1st {Math.round(pGroupWin * 100)}% · 2nd {Math.round(pGroupSecond * 100)}% · 3rd {Math.round(pThirdAdv * 100)}%
