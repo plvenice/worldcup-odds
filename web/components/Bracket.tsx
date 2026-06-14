@@ -303,8 +303,11 @@ export default function BracketView({ forecast }: Props) {
   const byId = useMemo(() => new Map(nodes.map((n) => [n.id, n])), [nodes]);
   const selectedNode = selected ? byId.get(selected) ?? null : null;
 
-  const onPath = (n: BNode) =>
-    hovered != null && n.dist.some((d) => d.team === hovered);
+  const onPath = (n: BNode) => {
+    if (hovered == null) return false;
+    if (n.round === "slot") return n.dist[0]?.team === hovered;
+    return n.dist.some((d) => d.team === hovered);
+  };
 
   // Connector paths
   const connectors = nodes.flatMap((n) =>

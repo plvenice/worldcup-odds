@@ -112,7 +112,7 @@ export default function TitleRaceChart({ forecast, history, liveTitleUpdates = {
     const value = Number(props.value ?? 0);
     return (
       <text
-        x={x + width + 4}
+        x={x + width + 14}
         y={y + 10}
         fill="var(--muted)"
         fontSize={10}
@@ -318,13 +318,14 @@ export default function TitleRaceChart({ forecast, history, liveTitleUpdates = {
                 getName(String(name)),
               ]}
               labelFormatter={(label) => fmtShortDate(String(label))}
+              wrapperStyle={{ zIndex: 100, outline: "none" }}
               contentStyle={{
-                background: "var(--panel)",
-                border: "1px solid var(--border)",
+                background: "#131A26",
+                border: "1px solid #1E2939",
                 borderRadius: 6,
                 fontSize: 12,
               }}
-              labelStyle={{ color: "var(--muted)" }}
+              labelStyle={{ color: "#8B97A8" }}
             />
             <Legend
               formatter={(value) => (
