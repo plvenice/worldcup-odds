@@ -331,28 +331,35 @@ export default function TitleRaceChart({ forecast, history, liveTitleUpdates = {
               width={36}
             />
             <Tooltip
-              formatter={(value, name) => [
-                `${Number(value).toFixed(1)}%`,
-                getName(String(name)),
-              ]}
-              labelFormatter={(label) => fmtShortDate(String(label))}
-              wrapperStyle={{ zIndex: 100, outline: "none" }}
-              contentStyle={{
-                background: "#131A26",
-                border: "1px solid #1E2939",
-                borderRadius: 6,
-                fontSize: 12,
+              content={({ active, payload, label }) => {
+                if (!active || !payload?.length) return null;
+                const sorted = [...payload].sort((a, b) => Number(b.value) - Number(a.value));
+                return (
+                  <div style={{ background: "#131A26", border: "1px solid #1E2939", borderRadius: 6, padding: "8px 12px", fontSize: 12 }}>
+                    <div style={{ color: "#8B97A8", marginBottom: 4 }}>{fmtShortDate(String(label))}</div>
+                    {sorted.map((p) => (
+                      <div key={String(p.dataKey)} style={{ color: String(p.color), display: "flex", justifyContent: "space-between", gap: 16 }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                          <Flag id={String(p.dataKey)} h={10} /> {getName(String(p.dataKey))}
+                        </span>
+                        <span style={{ fontVariantNumeric: "tabular-nums" }}>{Number(p.value).toFixed(1)}%</span>
+                      </div>
+                    ))}
+                  </div>
+                );
               }}
-              labelStyle={{ color: "#8B97A8" }}
+              wrapperStyle={{ zIndex: 100, outline: "none" }}
             />
             <Legend
-              formatter={(value) => (
-                <span
-                  className="inline-flex items-center gap-1"
-                  style={{ color: "var(--muted)", fontSize: 11 }}
-                >
-                  <Flag id={String(value)} h={10} /> {getName(String(value))}
-                </span>
+              content={() => (
+                <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", paddingTop: 4 }}>
+                  {top8.map((tid, i) => (
+                    <span key={tid} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, color: "var(--muted)" }}>
+                      <span style={{ display: "inline-block", width: 16, height: 2, background: teamColor(tid, i), borderRadius: 1 }} />
+                      <Flag id={tid} h={10} /> {getName(tid)}
+                    </span>
+                  ))}
+                </div>
               )}
             />
             {top8.map((tid, i) => (
