@@ -49,8 +49,9 @@ export default function TitleRaceChart({ forecast, history, liveTitleUpdates = {
       : undefined,
   }));
 
-  // History line chart — top 8 teams
-  const top8 = forecast.teams.slice(0, 8).map((t) => t.id);
+  // History line chart — top 8 teams (use probability-sorted teamsWithLive so
+  // the bottom legend and tooltip share the same high-to-low ranking order)
+  const top8 = teamsWithLive.slice(0, 8).map((t) => t.id);
   const timestamps = getTimestamps(history);
   const lineData = timestamps.map((ts) => {
     const row: Record<string, number | string> = { ts };
