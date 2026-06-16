@@ -104,8 +104,8 @@ function DetailPanel({
 
   return (
     <div
+      className="w-full md:w-[220px]"
       style={{
-        width: 220,
         flexShrink: 0,
         background: "var(--panel)",
         border: "1px solid var(--border)",
@@ -303,8 +303,11 @@ export default function BracketView({ forecast }: Props) {
   const byId = useMemo(() => new Map(nodes.map((n) => [n.id, n])), [nodes]);
   const selectedNode = selected ? byId.get(selected) ?? null : null;
 
-  const onPath = (n: BNode) =>
-    hovered != null && n.dist.some((d) => d.team === hovered);
+  const onPath = (n: BNode) => {
+    if (hovered == null) return false;
+    if (n.round === "slot") return n.dist[0]?.team === hovered;
+    return n.dist.some((d) => d.team === hovered);
+  };
 
   // Connector paths
   const connectors = nodes.flatMap((n) =>
@@ -333,7 +336,7 @@ export default function BracketView({ forecast }: Props) {
         Each slot shows who is projected to fill it. Hover any node to trace that team; click for full odds, venue, and date.
       </p>
 
-      <div className="flex gap-4 items-start">
+      <div className="flex flex-col gap-4 items-start md:flex-row">
         {/* Scrollable bracket */}
         <div className="overflow-auto pb-3 flex-1 min-w-0">
           <div style={{ position: "relative", width: totalW, height: totalH, minWidth: totalW }}>

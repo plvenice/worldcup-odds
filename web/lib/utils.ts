@@ -85,8 +85,8 @@ const TEAM_COLORS: Record<string, string> = {
   POR: "#8B5CF6",
   COL: "#EC4899",
   ECU: "#14B8A6",
-  NED: "#FB923C",
-  GER: "#94A3B8",
+  NED: "#FF6B00",
+  GER: "#D1D5DB",
   MEX: "#22D3EE",
   TUR: "#A78BFA",
 };

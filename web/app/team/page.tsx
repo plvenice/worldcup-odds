@@ -76,10 +76,13 @@ function TeamContent() {
   );
   const market = forecast.market?.implied?.[id];
 
-  // history sparkline for this team
-  const series = history
+  // history sparkline for this team — stride-sampled to ≤180 render points
+  const MAX_RENDER_PTS = 180;
+  const allSeries = history
     .filter((r: HistoryRow) => r.team === id)
     .map((r) => ({ ts: r.ts, p: r.p_title * 100 }));
+  const stride = Math.max(1, Math.ceil(allSeries.length / MAX_RENDER_PTS));
+  const series = allSeries.filter((_, i) => i % stride === 0 || i === allSeries.length - 1);
 
   // baseline: overall leader's current probability
   const leaderTeam = forecast.teams[0];
@@ -273,7 +276,14 @@ function TeamContent() {
 
       {/* remaining matches */}
       <section style={panel()} className="p-4">
-        <h2 className="font-heading font-bold text-lg uppercase tracking-wider" style={{ color: "var(--text)" }}>Remaining group matches</h2>
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <h2 className="font-heading font-bold text-lg uppercase tracking-wider" style={{ color: "var(--text)" }}>Remaining group matches</h2>
+          <div className="flex items-center gap-3" style={{ fontSize: 11, color: "var(--muted)" }}>
+            <MatchLegend color="var(--green)" label="Win" />
+            <MatchLegend color="var(--draw)" label="Draw" />
+            <MatchLegend color="var(--blue)" label="Loss" />
+          </div>
+        </div>
         {remaining.length === 0 ? (
           <p style={{ color: "var(--muted)", fontSize: 13 }} className="mt-3">
             No remaining group matches.
@@ -319,18 +329,29 @@ function RemainingMatch({ m, teamId }: { m: Match; teamId: string }) {
 
 function Seg({ p, color, label }: { p: number; color: string; label: string }) {
   if (p < 0.001) return null;
+  const showFull = p > 0.14;
+  const showLetter = p > 0.06;
   return (
     <div
-      className="h-full flex items-center justify-center"
+      className="h-full flex items-center justify-center gap-0.5"
       style={{ width: `${p * 100}%`, background: color, minWidth: p > 0.06 ? undefined : 0 }}
       title={`${label} ${fmtPct(p)}`}
     >
-      {p > 0.12 && (
+      {showLetter && (
         <span style={{ fontSize: 10, fontWeight: 600, color: "#08130C" }} className="tabular-nums">
-          {(p * 100).toFixed(0)}
+          {showFull ? `${label} ${(p * 100).toFixed(0)}` : label}
         </span>
       )}
     </div>
+  );
+}
+
+function MatchLegend({ color, label }: { color: string; label: string }) {
+  return (
+    <span className="flex items-center gap-1">
+      <span style={{ display: "inline-block", width: 10, height: 10, borderRadius: 2, background: color }} />
+      {label}
+    </span>
   );
 }
 

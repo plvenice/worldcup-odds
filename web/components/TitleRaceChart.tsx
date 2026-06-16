@@ -49,15 +49,32 @@ export default function TitleRaceChart({ forecast, history, liveTitleUpdates = {
       : undefined,
   }));
 
-  // History line chart — top 8 teams (use probability-sorted teamsWithLive so
-  // the bottom legend and tooltip share the same high-to-low ranking order)
+  // History line chart — top 8 teams
   const top8 = teamsWithLive.slice(0, 8).map((t) => t.id);
-  const timestamps = getTimestamps(history);
-  const lineData = timestamps.map((ts) => {
+  const top8Set = new Set(top8);
+
+  // O(1) lookup: ts → team → p_title (replaces O(n) find() inside map)
+  const histLookup = new Map<string, Map<string, number>>();
+  for (const h of history) {
+    if (!top8Set.has(h.team)) continue;
+    if (!histLookup.has(h.ts)) histLookup.set(h.ts, new Map());
+    histLookup.get(h.ts)!.set(h.team, parseFloat(fmtPctNum(h.p_title)));
+  }
+
+  const allTimestamps = getTimestamps(history);
+
+  // Stride-sample to ≤180 render points as history grows; always keep last point
+  const MAX_RENDER_PTS = 180;
+  const stride = Math.max(1, Math.ceil(allTimestamps.length / MAX_RENDER_PTS));
+  const sampledTimestamps = allTimestamps.filter(
+    (_, i) => i % stride === 0 || i === allTimestamps.length - 1
+  );
+
+  const lineData = sampledTimestamps.map((ts) => {
     const row: Record<string, number | string> = { ts };
+    const teamMap = histLookup.get(ts);
     for (const tid of top8) {
-      const entry = history.find((h) => h.ts === ts && h.team === tid);
-      row[tid] = entry ? parseFloat(fmtPctNum(entry.p_title)) : 0;
+      row[tid] = teamMap?.get(tid) ?? 0;
     }
     return row;
   });
@@ -113,7 +130,7 @@ export default function TitleRaceChart({ forecast, history, liveTitleUpdates = {
     const value = Number(props.value ?? 0);
     return (
       <text
-        x={x + width + 4}
+        x={x + width + 14}
         y={y + 10}
         fill="var(--muted)"
         fontSize={10}
@@ -318,13 +335,15 @@ export default function TitleRaceChart({ forecast, history, liveTitleUpdates = {
                 `${Number(value).toFixed(1)}%`,
                 getName(String(name)),
               ]}
+              labelFormatter={(label) => fmtShortDate(String(label))}
+              wrapperStyle={{ zIndex: 100, outline: "none" }}
               contentStyle={{
-                background: "var(--panel)",
-                border: "1px solid var(--border)",
+                background: "#131A26",
+                border: "1px solid #1E2939",
                 borderRadius: 6,
                 fontSize: 12,
               }}
-              labelStyle={{ color: "var(--muted)" }}
+              labelStyle={{ color: "#8B97A8" }}
             />
             <Legend
               formatter={(value) => (
