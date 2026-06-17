@@ -100,6 +100,13 @@ _WC_DATA_LOCK = threading.Lock()
 _WC_BRACKET = None
 _WC_VENUES = None
 
+# Post-match linger: hold last conditioned values for this many seconds after
+# all live matches end, so the dashboard doesn't snap back to stale forecast.json
+# while the pipeline is still catching up (15-min refresh cycle).
+_LINGER_SECS = 1200
+_LINGER_UNTIL = 0.0
+_LAST_LIVE_TITLE_UPDATES = {}
+
 
 def _get_wc_data():
     global _WC_BRACKET, _WC_VENUES
@@ -305,22 +312,35 @@ def compute_live(fixtures):
 
 
 def poll_loop():
+    global _LINGER_UNTIL, _LAST_LIVE_TITLE_UPDATES
     refresh_lambdas(force=True)
     while True:
         refresh_lambdas()
         fixtures = apifootball.fetch_live()
         matches, title_updates = compute_live(fixtures)
+        now = time.time()
+        is_live = len(matches) > 0
         with _LOCK:
             _STATE["updated_at"] = datetime.now(timezone.utc).isoformat()
-            _STATE["live"] = len(matches) > 0
+            _STATE["live"] = is_live
             _STATE["matches"] = matches
-            _STATE["title_updates"] = title_updates
-        if matches:
+            if is_live:
+                _STATE["title_updates"] = title_updates
+                _LAST_LIVE_TITLE_UPDATES = dict(title_updates)
+                _LINGER_UNTIL = now + _LINGER_SECS
+            elif now < _LINGER_UNTIL:
+                # Hold last known conditioned values — pipeline hasn't caught up yet
+                _STATE["title_updates"] = _LAST_LIVE_TITLE_UPDATES
+            else:
+                _STATE["title_updates"] = {}
+                _LAST_LIVE_TITLE_UPDATES = {}
+        if is_live:
             threading.Thread(target=run_live_resim, daemon=True).start()
             time.sleep(LIVE_INTERVAL)
         else:
-            with _LIVE_FORECAST_LOCK:
-                _LIVE_FORECAST["available"] = False
+            if now >= _LINGER_UNTIL:
+                with _LIVE_FORECAST_LOCK:
+                    _LIVE_FORECAST["available"] = False
             time.sleep(_idle_sleep())
 
 
