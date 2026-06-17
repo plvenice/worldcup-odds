@@ -26,13 +26,14 @@ interface Props {
 export default function TitleRaceChart({ forecast, history, liveTitleUpdates = {}, liveForecast }: Props) {
   const isLive = (liveForecast?.available ?? false) || Object.keys(liveTitleUpdates).length > 0;
 
-  // Prefer the conditioned-MC resim (live_forecast.json) when available — it
-  // re-simulates 5k paths from the current scoreline every 20 s.  Fall back to
-  // the leverage approximation (title_updates in live.json), then to the static
-  // forecast.json value.
+  // Prefer the zero-variance leverage estimate (title_updates in live.json) —
+  // it multiplies pre-computed conditional p_title values by live win probs and
+  // has no sampling noise, so small goal-by-goal signals are visible.  Fall back
+  // to the 5k resim (live_forecast.json) when leverage data is unavailable (e.g.
+  // between forecast.json refreshes), then to the static forecast.json value.
   const teamsWithLive = forecast.teams.map((t) => ({
     ...t,
-    p_title: liveForecast?.teams?.[t.id]?.p_title ?? liveTitleUpdates[t.id] ?? t.p_title,
+    p_title: liveTitleUpdates[t.id] ?? liveForecast?.teams?.[t.id]?.p_title ?? t.p_title,
   }));
   // Re-sort since live probabilities can reorder the top field.
   teamsWithLive.sort((a, b) => b.p_title - a.p_title);
