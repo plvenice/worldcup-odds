@@ -10,7 +10,7 @@ Parsed from {{football box}} templates via the MediaWiki API.
 import json
 import re
 import requests
-from datetime import datetime
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 from . import data
@@ -48,6 +48,37 @@ _START_DATE_RE = re.compile(r"\{\{[Ss]tart date\|(\d{4})\|(\d{1,2})\|(\d{1,2})")
 _FIELD_RES = {f: re.compile(r"^\s*\|\s*" + f + r"\s*=\s*(.*)$", re.M)
               for f in ("date", "team1", "team2", "score", "stadium", "time")}
 _BOX_SPLIT_RE = re.compile(r"\{\{(?:#invoke:)?football box")
+_KICKOFF_TIME_RE = re.compile(r"(\d{1,2}):(\d{2})")
+_LIVE_MATCH_WINDOW_MIN = 130  # 90 min + stoppage + potential AET buffer
+
+
+def _is_complete(match_date_str, time_str):
+    """Return False if the match is likely still in progress.
+
+    Wikipedia editors update the score template during live matches, so a
+    score appearing on the page doesn't mean the match has finished.  We
+    guard against that by refusing to treat a match as played if we're still
+    inside the expected duration window on match day.
+    """
+    if not match_date_str:
+        return True
+    try:
+        match_date = date.fromisoformat(match_date_str)
+    except ValueError:
+        return True
+    today = datetime.now(timezone.utc).date()
+    if match_date < today:
+        return True
+    if match_date > today:
+        return False
+    # Same calendar day: check whether kickoff + window has elapsed.
+    tm = _KICKOFF_TIME_RE.search(time_str or "")
+    if tm:
+        kickoff = datetime(match_date.year, match_date.month, match_date.day,
+                           int(tm.group(1)), int(tm.group(2)), tzinfo=timezone.utc)
+        return datetime.now(timezone.utc) >= kickoff + timedelta(minutes=_LIVE_MATCH_WINDOW_MIN)
+    # Today but no parseable kickoff time — assume complete to avoid stalling.
+    return True
 
 
 def _api_get(params, retries=3):
@@ -127,14 +158,15 @@ def parse_group_page(wikitext, group):
         n += 1
         score = _field(chunk, "score")
         sm = _SCORE_RE.search(score)
+        match_date = _parse_date(_field(chunk, "date"))
         fx = {
             "id": f"{group}{n}",
             "group": group,
             "home": t1,
             "away": t2,
-            "date": _parse_date(_field(chunk, "date")),
+            "date": match_date,
             "venue": _parse_stadium(_field(chunk, "stadium")),
-            "played": sm is not None,
+            "played": sm is not None and _is_complete(match_date, _field(chunk, "time")),
             "hg": int(sm.group(1)) if sm else None,
             "ag": int(sm.group(2)) if sm else None,
         }

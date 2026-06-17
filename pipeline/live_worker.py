@@ -159,20 +159,24 @@ def rebuild_state_from_forecast(fc, live_win_probs):
     for m in fc.get("matches", []):
         if not m.get("group"):
             continue
+        key = frozenset((m["home"], m["away"]))
+        is_live = key in live_win_probs
         fx = {
             "id": m["id"],
             "group": m["group"],
             "home": m["home"],
             "away": m["away"],
-            "played": m.get("played", False),
+            # If the match is currently live, treat it as unplayed so the
+            # simulation uses live_win_probs rather than a stale partial score
+            # that wiki.py may have ingested mid-game.
+            "played": m.get("played", False) and not is_live,
             "hg": m.get("hg") or 0,
             "ag": m.get("ag") or 0,
             "dr": 0.0,
             "total_factor": 1.0,
         }
         if not fx["played"]:
-            key = frozenset((m["home"], m["away"]))
-            if key in live_win_probs:
+            if is_live:
                 ph, pd, pa = live_win_probs[key]
                 fx["blend_probs"] = [float(ph), float(pd), float(pa)]
             elif m.get("probs"):

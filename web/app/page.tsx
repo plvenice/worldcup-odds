@@ -122,7 +122,7 @@ export default function HomePage() {
         {forecast && (
           <>
             <div id="title-race">
-              <TitleRaceChart forecast={forecast} history={history} liveTitleUpdates={liveTitleUpdates} />
+              <TitleRaceChart forecast={forecast} history={history} liveTitleUpdates={liveTitleUpdates} liveForecast={liveForecast} />
             </div>
             <div id="bracket">
               <BracketView forecast={forecast} />

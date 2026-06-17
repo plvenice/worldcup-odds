@@ -12,7 +12,7 @@ import {
   Line,
   Legend,
 } from "recharts";
-import type { Forecast, HistoryRow } from "@/lib/types";
+import type { Forecast, HistoryRow, LiveForecast } from "@/lib/types";
 import { flagUrl, getName, Flag } from "@/lib/flags";
 import { fmtPct, fmtPctNum, fmtShortDate, getTimestamps, teamColor } from "@/lib/utils";
 
@@ -20,17 +20,19 @@ interface Props {
   forecast: Forecast;
   history: HistoryRow[];
   liveTitleUpdates?: Record<string, number>;
+  liveForecast?: LiveForecast | null;
 }
 
-export default function TitleRaceChart({ forecast, history, liveTitleUpdates = {} }: Props) {
-  const isLive = Object.keys(liveTitleUpdates).length > 0;
+export default function TitleRaceChart({ forecast, history, liveTitleUpdates = {}, liveForecast }: Props) {
+  const isLive = (liveForecast?.available ?? false) || Object.keys(liveTitleUpdates).length > 0;
 
-  // Apply live conditional title odds when a match is in progress; fall back to
-  // the last MC result otherwise. This recalculates on every 20-second live.json
-  // poll so the bars reflect the current in-match state.
+  // Prefer the conditioned-MC resim (live_forecast.json) when available — it
+  // re-simulates 5k paths from the current scoreline every 20 s.  Fall back to
+  // the leverage approximation (title_updates in live.json), then to the static
+  // forecast.json value.
   const teamsWithLive = forecast.teams.map((t) => ({
     ...t,
-    p_title: liveTitleUpdates[t.id] ?? t.p_title,
+    p_title: liveForecast?.teams?.[t.id]?.p_title ?? liveTitleUpdates[t.id] ?? t.p_title,
   }));
   // Re-sort since live probabilities can reorder the top field.
   teamsWithLive.sort((a, b) => b.p_title - a.p_title);
