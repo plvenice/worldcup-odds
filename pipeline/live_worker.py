@@ -1,4 +1,4 @@
-"""Always-on live worker (Railway).
+﻿"""Always-on live worker (Railway).
 
 Polls API-Football on an adaptive cadence -- fast (~3x/min) only while World Cup
 matches are live, a 30-minute heartbeat otherwise, and it wakes ~2 min before
@@ -10,6 +10,10 @@ workflow_dispatch, bypassing GitHub's unreliable cron scheduler.
 
 Also runs a live re-simulation (5k paths) every poll cycle while a match is live,
 propagating the current scoreline through group standings and bracket odds.
+
+Kickoff schedule: on startup (and every 6h) the worker fetches the full WC 2026
+fixture list from API-Football so _idle_sleep() always knows when the next match
+starts, regardless of UTC date boundaries.
 
 Endpoints:
   GET /live.json          -> {updated_at, live, matches, title_updates}
@@ -44,7 +48,6 @@ from wc26.mc import simulate as mc_simulate
 
 LIVE_INTERVAL = int(os.environ.get("LIVE_INTERVAL", "20"))
 IDLE_INTERVAL = int(os.environ.get("IDLE_INTERVAL", "1800"))
-KICKOFF_WINDOW = int(os.environ.get("KICKOFF_WINDOW", "1200"))  # fast-poll for 20 min after scheduled kickoff
 FORECAST_URL = os.environ.get(
     "FORECAST_URL",
     "https://raw.githubusercontent.com/plvenice/worldcup-odds/data/forecast.json")
@@ -58,6 +61,8 @@ DISPATCH_INTERVAL = 900
 
 RESIM_NSIMS = 5000
 WC2026_HOSTS = {"USA", "CAN", "MEX"}
+
+SEASON_KICKOFFS_INTERVAL = 21600  # refresh full schedule every 6h
 
 
 def dispatch_loop():
@@ -107,6 +112,28 @@ _WC_VENUES = None
 _LINGER_SECS = 1200
 _LINGER_UNTIL = 0.0
 _LAST_LIVE_TITLE_UPDATES = {}
+
+# Season schedule cache -- populated on startup and refreshed every 6h.
+_SEASON_KICKOFFS = []
+_SEASON_KICKOFFS_AT = 0.0
+_SEASON_KICKOFFS_LOCK = threading.Lock()
+
+
+def _refresh_season_kickoffs():
+    """Fetch (or re-fetch) the full WC season schedule from API-Football.
+    Thread-safe; no-ops if the cache is fresh."""
+    global _SEASON_KICKOFFS, _SEASON_KICKOFFS_AT
+    with _SEASON_KICKOFFS_LOCK:
+        if time.time() - _SEASON_KICKOFFS_AT < SEASON_KICKOFFS_INTERVAL:
+            return
+        kicks = apifootball.fetch_season_kickoffs()
+        if kicks:
+            _SEASON_KICKOFFS = kicks
+            _SEASON_KICKOFFS_AT = time.time()
+            print(f"season schedule loaded: {len(kicks)} future kickoffs", flush=True)
+        elif not _SEASON_KICKOFFS:
+            # First load failed -- allow retry sooner than 6h
+            _SEASON_KICKOFFS_AT = time.time() - SEASON_KICKOFFS_INTERVAL + 300
 
 
 def _get_wc_data():
@@ -316,6 +343,7 @@ def poll_loop():
     global _LINGER_UNTIL, _LAST_LIVE_TITLE_UPDATES
     refresh_lambdas(force=True)
     while True:
+        _refresh_season_kickoffs()
         refresh_lambdas()
         fixtures = apifootball.fetch_live()
         matches, title_updates = compute_live(fixtures)
@@ -330,7 +358,7 @@ def poll_loop():
                 _LAST_LIVE_TITLE_UPDATES = dict(title_updates)
                 _LINGER_UNTIL = now + _LINGER_SECS
             elif now < _LINGER_UNTIL:
-                # Hold last known conditioned values — pipeline hasn't caught up yet
+                # Hold last known conditioned values -- pipeline hasn't caught up yet
                 _STATE["title_updates"] = _LAST_LIVE_TITLE_UPDATES
             else:
                 _STATE["title_updates"] = {}
@@ -348,16 +376,14 @@ def poll_loop():
 def _idle_sleep():
     try:
         now = datetime.now(timezone.utc)
-        kickoffs = apifootball.fetch_today_kickoffs()
-        future = [k for k in kickoffs if k > now]
+        with _SEASON_KICKOFFS_LOCK:
+            kicks = list(_SEASON_KICKOFFS)
+        if not kicks:
+            kicks = apifootball.fetch_today_kickoffs()
+        future = [k for k in kicks if k > now]
         if future:
             secs = (future[0] - now).total_seconds() - 120
             return max(15, min(IDLE_INTERVAL, int(secs)))
-        # Stay fast for KICKOFF_WINDOW seconds after any scheduled kickoff —
-        # API-Football can be 30–60s slow to register a match as live.
-        recent = [k for k in kickoffs if 0 <= (now - k).total_seconds() <= KICKOFF_WINDOW]
-        if recent:
-            return LIVE_INTERVAL
     except Exception:
         pass
     return IDLE_INTERVAL
@@ -390,6 +416,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main():
+    _refresh_season_kickoffs()
     threading.Thread(target=poll_loop, daemon=True).start()
     threading.Thread(target=dispatch_loop, daemon=True).start()
     port = int(os.environ.get("PORT", "8080"))
