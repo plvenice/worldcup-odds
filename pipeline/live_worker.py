@@ -44,6 +44,7 @@ from wc26.mc import simulate as mc_simulate
 
 LIVE_INTERVAL = int(os.environ.get("LIVE_INTERVAL", "20"))
 IDLE_INTERVAL = int(os.environ.get("IDLE_INTERVAL", "1800"))
+KICKOFF_WINDOW = int(os.environ.get("KICKOFF_WINDOW", "1200"))  # fast-poll for 20 min after scheduled kickoff
 FORECAST_URL = os.environ.get(
     "FORECAST_URL",
     "https://raw.githubusercontent.com/plvenice/worldcup-odds/data/forecast.json")
@@ -347,10 +348,16 @@ def poll_loop():
 def _idle_sleep():
     try:
         now = datetime.now(timezone.utc)
-        future = [k for k in apifootball.fetch_today_kickoffs() if k > now]
+        kickoffs = apifootball.fetch_today_kickoffs()
+        future = [k for k in kickoffs if k > now]
         if future:
             secs = (future[0] - now).total_seconds() - 120
             return max(15, min(IDLE_INTERVAL, int(secs)))
+        # Stay fast for KICKOFF_WINDOW seconds after any scheduled kickoff —
+        # API-Football can be 30–60s slow to register a match as live.
+        recent = [k for k in kickoffs if 0 <= (now - k).total_seconds() <= KICKOFF_WINDOW]
+        if recent:
+            return LIVE_INTERVAL
     except Exception:
         pass
     return IDLE_INTERVAL
