@@ -1,12 +1,12 @@
-"""API-Football (api-sports.io) client for live World Cup match state.
+﻿"""API-Football (api-sports.io) client for live World Cup match state.
 
 Needs API_FOOTBALL_KEY. World Cup is league 1, season 2026. Returns the
 current score, minute, and status for live matches; team names are mapped to
 our FIFA codes. Red cards are not pulled in the fast loop (they need a second
-endpoint) — a future enhancement; the model defaults to zero.
+endpoint) -- a future enhancement; the model defaults to zero.
 """
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import requests
 
@@ -19,9 +19,9 @@ SEASON = 2026
 # API-Football country-name spellings that differ from the odds feed.
 _EXTRA = {
     "iran": "IRN", "ir iran": "IRN", "korea republic": "KOR",
-    "south korea": "KOR", "côte d'ivoire": "CIV", "cote d'ivoire": "CIV",
-    "ivory coast": "CIV", "curaçao": "CUW", "curacao": "CUW",
-    "türkiye": "TUR", "turkiye": "TUR", "turkey": "TUR",
+    "south korea": "KOR", "cote d'ivoire": "CIV",
+    "ivory coast": "CIV", "curacao": "CUW",
+    "turkiye": "TUR", "turkey": "TUR",
     "czechia": "CZE", "czech republic": "CZE", "usa": "USA",
     "united states": "USA", "congo dr": "COD", "dr congo": "COD",
     "cape verde islands": "CPV", "cape verde": "CPV",
@@ -73,21 +73,53 @@ def fetch_live():
 
 
 def fetch_today_kickoffs():
-    """UTC datetimes of today's WC kickoffs (for schedule-aware waking). []
-    on failure."""
+    """UTC datetimes of today's + tomorrow's WC kickoffs. [] on failure.
+
+    Fetches two UTC dates to handle the day-boundary case where a late-evening
+    kickoff in the Americas falls on the following UTC date.
+    """
     if not os.environ.get("API_FOOTBALL_KEY"):
         return []
     try:
-        today = datetime.now(timezone.utc).date().isoformat()
+        now = datetime.now(timezone.utc)
+        dates = [
+            now.date().isoformat(),
+            (now.date() + timedelta(days=1)).isoformat(),
+        ]
+        out = []
+        for d in dates:
+            r = requests.get(f"{BASE}/fixtures",
+                             params={"league": WC_LEAGUE, "season": SEASON, "date": d},
+                             headers=_headers(), timeout=15)
+            r.raise_for_status()
+            for it in r.json().get("response", []):
+                ts = (it.get("fixture") or {}).get("timestamp")
+                if ts:
+                    out.append(datetime.fromtimestamp(ts, tz=timezone.utc))
+        return sorted(out)
+    except Exception:
+        return []
+
+
+def fetch_season_kickoffs():
+    """All future WC kickoff times for the season. Called once on startup and
+    refreshed every 6h so the worker knows the full schedule without making
+    per-day API calls. [] on failure / no key."""
+    if not os.environ.get("API_FOOTBALL_KEY"):
+        return []
+    try:
         r = requests.get(f"{BASE}/fixtures",
-                         params={"league": WC_LEAGUE, "season": SEASON, "date": today},
-                         headers=_headers(), timeout=15)
+                         params={"league": WC_LEAGUE, "season": SEASON},
+                         headers=_headers(), timeout=30)
         r.raise_for_status()
+        now = datetime.now(timezone.utc)
         out = []
         for it in r.json().get("response", []):
             ts = (it.get("fixture") or {}).get("timestamp")
             if ts:
-                out.append(datetime.fromtimestamp(ts, tz=timezone.utc))
+                dt = datetime.fromtimestamp(ts, tz=timezone.utc)
+                if dt > now - timedelta(hours=3):
+                    out.append(dt)
         return sorted(out)
     except Exception:
         return []
