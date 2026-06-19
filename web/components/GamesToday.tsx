@@ -99,7 +99,7 @@ function StakesRow({ m, teamId }: { m: Match; teamId: string }) {
 
 function MatchCard({ m, forecast }: { m: Match; forecast: Forecast }) {
   const venue = VENUES[m.venue];
-  const kickoff = fmtKickoff(m.date, m.time_utc, m.venue);
+  const kickoff = fmtKickoff(m.time_utc);
   const hasStakes =
     !m.played &&
     !!m.leverage?.some((l) => l.team === m.home || l.team === m.away);
@@ -228,37 +228,12 @@ function localToday(): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
-// Wikipedia stores kickoff times in local venue time, not UTC.
-// These are the UTC offsets (hours) for each venue in June/July 2026 (DST in effect).
-const VENUE_UTC_OFFSET: Record<string, number> = {
-  azteca: -6,       // Mexico City, CST (Mexico abolished DST 2023)
-  akron: -6,        // Guadalajara, CST
-  bbva: -6,         // Monterrey, CST
-  bmo: -4,          // Toronto, EDT
-  bcplace: -7,      // Vancouver, PDT
-  sofi: -7,         // Inglewood, PDT
-  levis: -7,        // Santa Clara, PDT
-  lumen: -7,        // Seattle, PDT
-  att: -5,          // Arlington, CDT
-  nrg: -5,          // Houston, CDT
-  arrowhead: -5,    // Kansas City, CDT
-  mercedesbenz: -4, // Atlanta, EDT
-  hardrock: -4,     // Miami, EDT
-  metlife: -4,      // East Rutherford, EDT
-  lincoln: -4,      // Philadelphia, EDT
-  gillette: -4,     // Foxborough, EDT
-};
-
-/** Convert "HH:MM" local venue time to viewer-local "H:MM AM/PM" string. */
-function fmtKickoff(date: string, timeLocal: string | null | undefined, venue: string): string | null {
-  if (!timeLocal) return null;
-  const [hh, mm] = timeLocal.split(":").map(Number);
-  if (isNaN(hh) || isNaN(mm)) return null;
-  const offset = VENUE_UTC_OFFSET[venue] ?? 0;
-  // UTC = local − offset (offset is negative for western timezones)
-  const [y, mo, d] = date.split("-").map(Number);
-  const utcMs = Date.UTC(y, mo - 1, d) + (hh * 60 + mm - offset * 60) * 60_000;
-  return new Date(utcMs).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+/** Convert UTC ISO datetime string from pipeline to viewer-local "H:MM AM/PM". */
+function fmtKickoff(timeUtc: string | null | undefined): string | null {
+  if (!timeUtc) return null;
+  const d = new Date(timeUtc);
+  if (isNaN(d.getTime())) return null;
+  return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 }
 
 interface Props {

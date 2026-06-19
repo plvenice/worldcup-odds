@@ -49,7 +49,47 @@ _FIELD_RES = {f: re.compile(r"^\s*\|\s*" + f + r"\s*=\s*(.*)$", re.M)
               for f in ("date", "team1", "team2", "score", "stadium", "time")}
 _BOX_SPLIT_RE = re.compile(r"\{\{(?:#invoke:)?football box")
 _KICKOFF_TIME_RE = re.compile(r"(\d{1,2}):(\d{2})")
+# Captures optional AM/PM suffix (handles "6:00&nbsp;p.m." Wikipedia format)
+_KICKOFF_AMPM_RE = re.compile(r"(\d{1,2}):(\d{2})(?:[^A-Za-z]*([AaPp]\.?[Mm]\.?))?")
 _LIVE_MATCH_WINDOW_MIN = 130  # 90 min + stoppage + potential AET buffer
+
+# UTC offset (hours) for each venue — June/July 2026, DST in effect.
+# Wikipedia stores times in local venue time; we convert to UTC for storage.
+_VENUE_UTC_OFFSET = {
+    "azteca": -6, "akron": -6, "bbva": -6,          # Mexico (no DST since 2023)
+    "bmo": -4, "bcplace": -7,                         # Canada (EDT / PDT)
+    "sofi": -7, "levis": -7, "lumen": -7,             # Pacific (PDT)
+    "att": -5, "nrg": -5, "arrowhead": -5,            # Central (CDT)
+    "mercedesbenz": -4, "hardrock": -4,               # Eastern (EDT)
+    "metlife": -4, "lincoln": -4, "gillette": -4,     # Eastern (EDT)
+}
+
+
+def _parse_kickoff_utc_iso(time_raw, venue, match_date_str):
+    """Parse Wikipedia time field and return a UTC ISO datetime string, or None.
+
+    Wikipedia stores local venue time in 12-hour format with a p.m. suffix, e.g.
+    "6:00&nbsp;p.m.".  We convert to UTC using the venue's DST-adjusted offset.
+    """
+    if not time_raw or not match_date_str:
+        return None
+    tm = _KICKOFF_AMPM_RE.search(time_raw)
+    if not tm:
+        return None
+    h, m = int(tm.group(1)), int(tm.group(2))
+    ampm = (tm.group(3) or "").lower().replace(".", "").strip()
+    if ampm == "pm" and h != 12:
+        h += 12
+    elif ampm == "am" and h == 12:
+        h = 0
+    offset = _VENUE_UTC_OFFSET.get(venue or "", 0)
+    try:
+        y, mo, d = int(match_date_str[:4]), int(match_date_str[5:7]), int(match_date_str[8:10])
+        # UTC = local − offset (offset is negative for western zones)
+        utc_dt = datetime(y, mo, d, h, m, tzinfo=timezone.utc) - timedelta(hours=offset)
+        return utc_dt.isoformat()
+    except Exception:
+        return None
 
 
 def _is_complete(match_date_str, time_str):
@@ -160,15 +200,15 @@ def parse_group_page(wikitext, group):
         sm = _SCORE_RE.search(score)
         match_date = _parse_date(_field(chunk, "date"))
         time_raw = _field(chunk, "time")
-        tm = _KICKOFF_TIME_RE.search(time_raw or "")
+        venue = _parse_stadium(_field(chunk, "stadium"))
         fx = {
             "id": f"{group}{n}",
             "group": group,
             "home": t1,
             "away": t2,
             "date": match_date,
-            "time_utc": f"{int(tm.group(1)):02d}:{tm.group(2)}" if tm else None,
-            "venue": _parse_stadium(_field(chunk, "stadium")),
+            "time_utc": _parse_kickoff_utc_iso(time_raw, venue, match_date),
+            "venue": venue,
             "played": sm is not None and _is_complete(match_date, time_raw),
             "hg": int(sm.group(1)) if sm else None,
             "ag": int(sm.group(2)) if sm else None,
