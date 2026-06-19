@@ -41,6 +41,7 @@ jobs:
       - name: Run forecast
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
         run: python pipeline/refresh.py --nsims 50000
 
       - name: Publish to data branch

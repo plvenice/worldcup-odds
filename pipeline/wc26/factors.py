@@ -18,6 +18,9 @@ ALT_PER_250M = 4.0         # Elo per 250m above 1000m vs unadapted opponent
 ALT_ADAPTED = {"MEX", "ECU", "COL"}  # high-altitude home leagues / capitals
 HEAT_INDEX_THRESHOLD_C = 32.0
 SURFACE_DR_SHRINK = 0.5    # dr *= 1 - (1-quality)*SHRINK  (equalizer)
+AUTO_INJURY_WEIGHT = 25.0  # flat Elo dock for API-detected injuries with unknown
+                           # player tier; manual entries in availability_overrides.json
+                           # take precedence and use the documented 45/30/15 tiers
 
 
 def haversine_km(lat1, lon1, lat2, lon2):

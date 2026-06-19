@@ -10,7 +10,7 @@ import numpy as np
 from datetime import date, datetime, timezone
 from pathlib import Path
 
-from . import data, dc_ratings as dc_mod, factors, wiki, weather, odds
+from . import apifootball, data, dc_ratings as dc_mod, factors, wiki, weather, odds
 from .matchmodel import (elo_update, outcome_probs, outcome_probs_lhla,
                          blend_outcome, lambdas, ELO_K_GROUP, ELO_K_KNOCKOUT)
 from . import standings as st
@@ -48,11 +48,30 @@ def _update_blend_log(fixtures):
                          encoding="utf-8")
 
 
+def _merge_auto_injuries(manual, auto):
+    """Append API-detected injuries not already covered by a manual entry.
+    Dedupes on exact (team, player) match; also guards against the API
+    returning the same player twice in one response."""
+    seen = {(o["team"], o.get("player", "")) for o in manual}
+    merged = list(manual)
+    for inj in auto:
+        key = (inj["team"], inj["player"])
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append({
+            "team": inj["team"], "player": inj["player"],
+            "weight": factors.AUTO_INJURY_WEIGHT, "until": None,
+            "reason": "auto-detected (API-Football)",
+        })
+    return merged
+
+
 def build_state(nsims_note=None, fetch_weather=True, h2h=None):
     by_id, ids = data.teams()
     venues = data.venues()
     groups = data.groups()
-    overrides = data.availability()
+    overrides = _merge_auto_injuries(data.availability(), apifootball.fetch_current_injuries())
     fixtures, source = wiki.fetch_group_fixtures()
     fixtures.sort(key=lambda f: (f["date"] or "9999", f["id"]))
 

@@ -8,6 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from wc26 import matchmodel as mm
 from wc26 import factors
+from wc26 import forecast
 
 
 def test_outcome_probs_sum_to_one():
@@ -57,6 +58,20 @@ def test_availability_penalty():
     pen, names = factors.availability_penalty("FRA", overrides,
                                               datetime.date(2026, 6, 12))
     assert pen == 45 and names == ["X"]   # Y returned June 1
+
+
+def test_merge_auto_injuries():
+    manual = [{"team": "FRA", "player": "X", "weight": 45, "until": None}]
+    auto = [
+        {"team": "FRA", "player": "X"},        # already manual -- skip
+        {"team": "USA", "player": "Pulisic"},  # new -- gets flat default
+        {"team": "USA", "player": "Pulisic"},  # dup within API response -- skip
+    ]
+    merged = forecast._merge_auto_injuries(manual, auto)
+    assert len(merged) == 2
+    usa = next(o for o in merged if o["team"] == "USA")
+    assert usa["weight"] == factors.AUTO_INJURY_WEIGHT
+    assert usa["reason"] == "auto-detected (API-Football)"
 
 
 def test_blend_outcome():

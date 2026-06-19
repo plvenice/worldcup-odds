@@ -123,3 +123,24 @@ def fetch_season_kickoffs():
         return sorted(out)
     except Exception:
         return []
+
+
+def fetch_current_injuries():
+    """Currently-reported WC injuries/unavailability: [{team, player}].
+    team mapped to FIFA codes via _team_id(). [] on failure / no key."""
+    if not os.environ.get("API_FOOTBALL_KEY"):
+        return []
+    try:
+        r = requests.get(f"{BASE}/injuries",
+                         params={"league": WC_LEAGUE, "season": SEASON},
+                         headers=_headers(), timeout=15)
+        r.raise_for_status()
+        out = []
+        for it in r.json().get("response", []):
+            tid = _team_id((it.get("team") or {}).get("name"))
+            pname = (it.get("player") or {}).get("name")
+            if tid and pname:
+                out.append({"team": tid, "player": pname})
+        return out
+    except Exception:
+        return []
