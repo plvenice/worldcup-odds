@@ -4,9 +4,10 @@ Design notes:
 - Ratings are updated from *real* results between pipeline runs, but held
   static within a simulation (standard practice; within-tournament Elo drift
   is second-order).
-- Group ranking is fully vectorized (lexsort on pts/gd/gf with a pairwise
-  head-to-head term that is exact for two-way ties and a mini-table-points
-  approximation for 3+ way ties; jitter stands in for drawing of lots).
+- Group ranking is fully vectorized (lexsort: pts → h2h pts → h2h gd →
+  h2h gf → overall gd → overall gf → jitter; h2h terms use only pts-tied
+  opponents, matching FIFA tiebreaker rules; exact for 2-way ties and
+  mini-table-points for 3+ way ties).
 - Knockout situational factors (rest, travel, altitude, surface, host) are
   deterministic per bracket slot, so they're precomputed as slot constants.
 - Leverage comes free: each sim samples every remaining fixture, so
@@ -81,12 +82,24 @@ def goals_for_fixture(fx, sampled, nsims):
 
 def rank_group(group_fixtures, local_idx, sampled, nsims, rng):
     """Returns (order, pts, gd, gf): order is (nsims, 4) of local team idx,
-    position 0 = group winner."""
+    position 0 = group winner.
+
+    Tiebreaker order follows FIFA rules:
+      1. Overall points
+      2. H2H points among pts-tied opponents
+      3. H2H goal difference among pts-tied opponents
+      4. H2H goals scored among pts-tied opponents
+      5. Overall goal difference
+      6. Overall goals scored
+      7. Lots (jitter)
+    """
     pts = np.zeros((nsims, 4), dtype=np.int16)
     gf = np.zeros((nsims, 4), dtype=np.int16)
     ga = np.zeros((nsims, 4), dtype=np.int16)
-    # per-pair points earned (for head-to-head): h2h_pts[a][b] = pts a earned vs b
+    # per-pair stats: [sim, a, b] = what a earned/scored/conceded vs b
     h2h_pts = np.zeros((nsims, 4, 4), dtype=np.int16)
+    h2h_gf  = np.zeros((nsims, 4, 4), dtype=np.int16)
+    h2h_ga  = np.zeros((nsims, 4, 4), dtype=np.int16)
 
     for fx in group_fixtures:
         a, b = local_idx[fx["home"]], local_idx[fx["away"]]
@@ -96,23 +109,32 @@ def rank_group(group_fixtures, local_idx, sampled, nsims, rng):
         dr_ = ~hw & ~aw
         pts[:, a] += 3 * hw + dr_
         pts[:, b] += 3 * aw + dr_
-        gf[:, a] += hg; ga[:, a] += ag_
+        gf[:, a] += hg;  ga[:, a] += ag_
         gf[:, b] += ag_; ga[:, b] += hg
         h2h_pts[:, a, b] += 3 * hw + dr_
         h2h_pts[:, b, a] += 3 * aw + dr_
+        h2h_gf[:, a, b] += hg;  h2h_ga[:, a, b] += ag_
+        h2h_gf[:, b, a] += ag_; h2h_ga[:, b, a] += hg
 
     gd = gf - ga
-    # pairwise tie detection on (pts, gd, gf)
-    h2h = np.zeros((nsims, 4), dtype=np.float32)
+
+    # FIFA tiebreakers 2-4: h2h mini-table restricted to pts-tied opponents.
+    # Exact for 2-way ties; mini-table-points approximation for 3+ way ties.
+    h2h_p = np.zeros((nsims, 4), dtype=np.int32)
+    h2h_d = np.zeros((nsims, 4), dtype=np.int32)
+    h2h_s = np.zeros((nsims, 4), dtype=np.int32)
     for a in range(4):
         for b in range(4):
             if a == b:
                 continue
-            tied = ((pts[:, a] == pts[:, b]) & (gd[:, a] == gd[:, b])
-                    & (gf[:, a] == gf[:, b]))
-            h2h[:, a] += tied * h2h_pts[:, a, b]
+            same_pts = (pts[:, a] == pts[:, b])
+            h2h_p[:, a] += same_pts * h2h_pts[:, a, b]
+            h2h_d[:, a] += same_pts * (h2h_gf[:, a, b] - h2h_ga[:, a, b])
+            h2h_s[:, a] += same_pts * h2h_gf[:, a, b]
+
     jit = rng.random((nsims, 4)).astype(np.float32)
-    order = np.lexsort((jit, -h2h, -gf, -gd, -pts), axis=1)
+    # lexsort: last key = most significant
+    order = np.lexsort((jit, -gf, -gd, -h2h_s, -h2h_d, -h2h_p, -pts), axis=1)
     return order, pts, gd, gf
 
 
