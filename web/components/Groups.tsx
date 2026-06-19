@@ -184,17 +184,12 @@ export default function Groups({ forecast, liveForecast }: Props) {
   const groupKeys = Object.keys(forecast.groups).sort();
 
   const sortedGroups = groupKeys.slice().sort((a, b) => {
-    const bestA = Math.max(
-      ...forecast.groups[a].map(
-        (row) => forecast.teams.find((t) => t.id === row.team)?.p_title ?? 0
-      )
-    );
-    const bestB = Math.max(
-      ...forecast.groups[b].map(
-        (row) => forecast.teams.find((t) => t.id === row.team)?.p_title ?? 0
-      )
-    );
-    return bestB - bestA;
+    const nextA = forecast.matches.filter(m => m.group === a && !m.played).map(m => m.date).sort()[0];
+    const nextB = forecast.matches.filter(m => m.group === b && !m.played).map(m => m.date).sort()[0];
+    if (nextA && !nextB) return -1;
+    if (!nextA && nextB) return 1;
+    if (nextA && nextB) return nextA < nextB ? -1 : nextA > nextB ? 1 : a.localeCompare(b);
+    return a.localeCompare(b);
   });
 
   return (
