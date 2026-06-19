@@ -49,8 +49,9 @@ _FIELD_RES = {f: re.compile(r"^\s*\|\s*" + f + r"\s*=\s*(.*)$", re.M)
               for f in ("date", "team1", "team2", "score", "stadium", "time")}
 _BOX_SPLIT_RE = re.compile(r"\{\{(?:#invoke:)?football box")
 _KICKOFF_TIME_RE = re.compile(r"(\d{1,2}):(\d{2})")
-# Captures optional AM/PM suffix (handles "6:00&nbsp;p.m." Wikipedia format)
-_KICKOFF_AMPM_RE = re.compile(r"(\d{1,2}):(\d{2})(?:[^A-Za-z]*([AaPp]\.?[Mm]\.?))?")
+# Captures optional AM/PM suffix (handles "6:00 p.m." Wikipedia format, after
+# &nbsp;/NBSP entities are stripped -- see _parse_kickoff_utc_iso).
+_KICKOFF_AMPM_RE = re.compile(r"(\d{1,2}):(\d{2})\s*([AaPp]\.?[Mm]\.?)?")
 _LIVE_MATCH_WINDOW_MIN = 130  # 90 min + stoppage + potential AET buffer
 
 # UTC offset (hours) for each venue — June/July 2026, DST in effect.
@@ -73,7 +74,8 @@ def _parse_kickoff_utc_iso(time_raw, venue, match_date_str):
     """
     if not time_raw or not match_date_str:
         return None
-    tm = _KICKOFF_AMPM_RE.search(time_raw)
+    cleaned = time_raw.replace("&nbsp;", " ").replace("&#160;", " ").replace("\xa0", " ")
+    tm = _KICKOFF_AMPM_RE.search(cleaned)
     if not tm:
         return None
     h, m = int(tm.group(1)), int(tm.group(2))
