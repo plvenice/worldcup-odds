@@ -159,14 +159,17 @@ def parse_group_page(wikitext, group):
         score = _field(chunk, "score")
         sm = _SCORE_RE.search(score)
         match_date = _parse_date(_field(chunk, "date"))
+        time_raw = _field(chunk, "time")
+        tm = _KICKOFF_TIME_RE.search(time_raw or "")
         fx = {
             "id": f"{group}{n}",
             "group": group,
             "home": t1,
             "away": t2,
             "date": match_date,
+            "time_utc": f"{int(tm.group(1)):02d}:{tm.group(2)}" if tm else None,
             "venue": _parse_stadium(_field(chunk, "stadium")),
-            "played": sm is not None and _is_complete(match_date, _field(chunk, "time")),
+            "played": sm is not None and _is_complete(match_date, time_raw),
             "hg": int(sm.group(1)) if sm else None,
             "ag": int(sm.group(2)) if sm else None,
         }

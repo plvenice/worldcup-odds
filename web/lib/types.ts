@@ -44,6 +44,7 @@ export interface Match {
   home: string;
   away: string;
   date: string;
+  time_utc?: string | null;  // "HH:MM" UTC, from Wikipedia kickoff time
   venue: string;
   played: boolean;
   hg: number | null;

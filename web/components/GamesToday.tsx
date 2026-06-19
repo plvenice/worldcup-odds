@@ -99,6 +99,7 @@ function StakesRow({ m, teamId }: { m: Match; teamId: string }) {
 
 function MatchCard({ m, forecast }: { m: Match; forecast: Forecast }) {
   const venue = VENUES[m.venue];
+  const kickoff = fmtKickoff(m.date, m.time_utc);
   const hasStakes =
     !m.played &&
     !!m.leverage?.some((l) => l.team === m.home || l.team === m.away);
@@ -126,6 +127,11 @@ function MatchCard({ m, forecast }: { m: Match; forecast: Forecast }) {
           style={{ color: "var(--gold)", fontSize: 11 }}
         >
           Group {m.group}
+          {kickoff && (
+            <span style={{ color: "var(--muted)", fontWeight: 400, marginLeft: 6 }}>
+              · {kickoff}
+            </span>
+          )}
         </span>
         <span style={{ color: "var(--muted)", fontSize: 11 }}>
           {venue ? `${venue.name} · ${venue.city}` : m.venue}
@@ -220,6 +226,17 @@ function MatchCard({ m, forecast }: { m: Match; forecast: Forecast }) {
 function localToday(): string {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+/** Convert "HH:MM" UTC kickoff time to viewer-local "H:MM AM/PM" string. */
+function fmtKickoff(date: string, timeUtc: string | null | undefined): string | null {
+  if (!timeUtc) return null;
+  const [hh, mm] = timeUtc.split(":").map(Number);
+  if (isNaN(hh) || isNaN(mm)) return null;
+  // Build a UTC Date from the match date + kickoff time
+  const [y, mo, d] = date.split("-").map(Number);
+  const utc = new Date(Date.UTC(y, mo - 1, d, hh, mm));
+  return utc.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 }
 
 interface Props {

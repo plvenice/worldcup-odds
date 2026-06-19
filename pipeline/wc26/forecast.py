@@ -229,7 +229,7 @@ def aggregate(state, res, nsims):
     matches_out = []
     for fx in state["fixtures"]:
         rec = {k: fx.get(k) for k in
-               ("id", "group", "home", "away", "date", "venue", "played", "hg", "ag")}
+               ("id", "group", "home", "away", "date", "time_utc", "venue", "played", "hg", "ag")}
         if not fx["played"]:
             eff = fx.get("blend_probs") or fx.get("model_probs") \
                 or [round(x, 4) for x in outcome_probs(fx["dr"], fx["total_factor"])]
