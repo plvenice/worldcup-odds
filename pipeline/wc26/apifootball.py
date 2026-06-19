@@ -134,6 +134,7 @@ def fetch_current_injuries():
         r = requests.get(f"{BASE}/injuries",
                          params={"league": WC_LEAGUE, "season": SEASON},
                          headers=_headers(), timeout=15)
+        print(f"[DIAG] injuries status={r.status_code} body={r.text[:500]!r}")
         r.raise_for_status()
         out = []
         for it in r.json().get("response", []):
@@ -142,5 +143,6 @@ def fetch_current_injuries():
             if tid and pname:
                 out.append({"team": tid, "player": pname})
         return out
-    except Exception:
+    except Exception as e:
+        print(f"[DIAG] injuries fetch failed: {e!r}")
         return []
