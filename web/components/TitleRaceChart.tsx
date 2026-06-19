@@ -12,6 +12,7 @@ import {
   Line,
   Legend,
 } from "recharts";
+import Link from "next/link";
 import type { Forecast, HistoryRow, LiveForecast } from "@/lib/types";
 import { flagUrl, getName, Flag, TeamLink } from "@/lib/flags";
 import { fmtPct, fmtPctNum, fmtShortDate, getTimestamps, teamColor } from "@/lib/utils";
@@ -260,7 +261,7 @@ export default function TitleRaceChart({ forecast, history, liveTitleUpdates = {
                         preserveAspectRatio="xMidYMid meet"
                       />
                     )}
-                    <a href={`/team?id=${id}`} style={{ cursor: "pointer", textDecoration: "none" }}>
+                    <Link href={`/team?id=${id}`} style={{ cursor: "pointer", textDecoration: "none" }}>
                       <text
                         x={url ? 26 : 4}
                         y={yy + 4}
@@ -271,7 +272,7 @@ export default function TitleRaceChart({ forecast, history, liveTitleUpdates = {
                       >
                         {getName(id)}
                       </text>
-                    </a>
+                    </Link>
                   </g>
                 );
               }}
