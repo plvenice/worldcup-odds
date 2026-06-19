@@ -13,7 +13,7 @@ import {
   Legend,
 } from "recharts";
 import type { Forecast, HistoryRow, LiveForecast } from "@/lib/types";
-import { flagUrl, getName, Flag } from "@/lib/flags";
+import { flagUrl, getName, Flag, TeamLink } from "@/lib/flags";
 import { fmtPct, fmtPctNum, fmtShortDate, getTimestamps, teamColor } from "@/lib/utils";
 
 interface Props {
@@ -260,16 +260,18 @@ export default function TitleRaceChart({ forecast, history, liveTitleUpdates = {
                         preserveAspectRatio="xMidYMid meet"
                       />
                     )}
-                    <text
-                      x={url ? 26 : 4}
-                      y={yy + 4}
-                      textAnchor="start"
-                      fill="var(--text)"
-                      fontSize={12.5}
-                      fontFamily="'Barlow Condensed', system-ui"
-                    >
-                      {getName(id)}
-                    </text>
+                    <a href={`/team?id=${id}`} style={{ cursor: "pointer", textDecoration: "none" }}>
+                      <text
+                        x={url ? 26 : 4}
+                        y={yy + 4}
+                        textAnchor="start"
+                        fill="var(--text)"
+                        fontSize={12.5}
+                        fontFamily="'Barlow Condensed', system-ui"
+                      >
+                        {getName(id)}
+                      </text>
+                    </a>
                   </g>
                 );
               }}
@@ -342,9 +344,9 @@ export default function TitleRaceChart({ forecast, history, liveTitleUpdates = {
                     <div style={{ color: "#8B97A8", marginBottom: 4 }}>{fmtShortDate(String(label))}</div>
                     {sorted.map((p) => (
                       <div key={String(p.dataKey)} style={{ color: String(p.color), display: "flex", justifyContent: "space-between", gap: 16 }}>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                        <TeamLink id={String(p.dataKey)} style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "inherit", textDecoration: "none" }} className="hover:underline">
                           <Flag id={String(p.dataKey)} h={10} /> {getName(String(p.dataKey))}
-                        </span>
+                        </TeamLink>
                         <span style={{ fontVariantNumeric: "tabular-nums" }}>{Number(p.value).toFixed(1)}%</span>
                       </div>
                     ))}
@@ -357,10 +359,10 @@ export default function TitleRaceChart({ forecast, history, liveTitleUpdates = {
               content={() => (
                 <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", paddingTop: 4 }}>
                   {top8.map((tid, i) => (
-                    <span key={tid} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, color: "var(--muted)" }}>
+                    <TeamLink key={tid} id={tid} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, color: "var(--muted)", textDecoration: "none" }} className="hover:underline">
                       <span style={{ display: "inline-block", width: 16, height: 2, background: teamColor(tid, i), borderRadius: 1 }} />
                       <Flag id={tid} h={10} /> {getName(tid)}
-                    </span>
+                    </TeamLink>
                   ))}
                 </div>
               )}

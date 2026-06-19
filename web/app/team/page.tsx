@@ -195,7 +195,11 @@ function TeamContent() {
                       <span className="inline-flex items-center gap-1.5">
                         <span style={{ color: "var(--muted)" }}>{i + 1}</span>
                         <Flag id={row.team} h={12} />
-                        {getName(row.team)}
+                        {me ? getName(row.team) : (
+                          <Link href={`/team?id=${row.team}`} className="hover:underline" style={{ color: "inherit" }}>
+                            {getName(row.team)}
+                          </Link>
+                        )}
                       </span>
                     </td>
                     <td className="text-center">{row.played}</td>
@@ -217,7 +221,7 @@ function TeamContent() {
                 <svg width={16} height={8} viewBox="0 0 16 8" fill="none">
                   <line x1="0" y1="4" x2="16" y2="4" stroke="var(--muted)" strokeWidth="1.5" strokeDasharray="3 2" />
                 </svg>
-                Leader ({getName(leaderTeam.id)}) {leaderPct.toFixed(1)}%
+                Leader (<Link href={`/team?id=${leaderTeam.id}`} className="hover:underline" style={{ color: "inherit" }}>{getName(leaderTeam.id)}</Link>) {leaderPct.toFixed(1)}%
               </div>
             )}
           </div>
@@ -316,7 +320,7 @@ function RemainingMatch({ m, teamId }: { m: Match; teamId: string }) {
       <span className="inline-flex items-center gap-1.5" style={{ width: 150, fontSize: 13 }}>
         <span style={{ color: "var(--muted)" }}>{isHome ? "vs" : "@"}</span>
         <Flag id={opp} h={12} />
-        <span className="truncate" title={getName(opp)}>{getName(opp)}</span>
+        <Link href={`/team?id=${opp}`} className="truncate hover:underline" title={getName(opp)} style={{ color: "inherit" }}>{getName(opp)}</Link>
       </span>
       <div className="flex-1 h-5 rounded overflow-hidden flex" style={{ background: "var(--bg)" }}>
         <Seg p={winP} color="var(--green)" label="W" />

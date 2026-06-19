@@ -6,6 +6,7 @@
 // Windows, macOS, Android, and iOS.
 
 import React from "react";
+import Link from "next/link";
 
 export const TEAM_NAMES: Record<string, string> = {
   MEX: "Mexico", RSA: "South Africa", KOR: "South Korea", CZE: "Czechia",
@@ -45,6 +46,29 @@ export function getFlagCode(teamId: string): string | undefined {
 export function flagUrl(teamId: string): string | undefined {
   const code = TEAM_ISO[teamId];
   return code ? `https://flagcdn.com/${code}.svg` : undefined;
+}
+
+/** Link to /team?id=X wrapping the team's full name (or custom children). */
+export function TeamLink({
+  id,
+  children,
+  style,
+  className,
+}: {
+  id: string;
+  children?: React.ReactNode;
+  style?: React.CSSProperties;
+  className?: string;
+}) {
+  return (
+    <Link
+      href={`/team?id=${id}`}
+      style={style}
+      className={className}
+    >
+      {children ?? getName(id)}
+    </Link>
+  );
 }
 
 /** Inline flag image sized to a target height (px). Renders a neutral

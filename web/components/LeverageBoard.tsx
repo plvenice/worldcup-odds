@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import type { Match } from "@/lib/types";
 import { Flag, getName } from "@/lib/flags";
 import { fmtPct, fmtMatchDate } from "@/lib/utils";
@@ -120,7 +121,8 @@ function LeverageDetail({ match }: { match: Match }) {
       {(match.leverage ?? []).map((lev) => (
         <div key={lev.team} className="flex flex-col gap-1">
           <div className="flex items-center gap-1.5 font-semibold" style={{ color: "var(--text)" }}>
-            <Flag id={lev.team} h={12} /> {getName(lev.team)}
+            <Flag id={lev.team} h={12} />
+            <Link href={`/team?id=${lev.team}`} className="hover:underline" style={{ color: "inherit" }}>{getName(lev.team)}</Link>
           </div>
           <div className="flex gap-3 flex-wrap">
             <div>
@@ -262,10 +264,10 @@ export default function LeverageBoard({ matches }: Props) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 text-sm font-semibold flex-wrap">
                     <Flag id={m.home} h={14} />
-                    <span style={{ color: "var(--text)" }}>{getName(m.home)}</span>
+                    <Link href={`/team?id=${m.home}`} onClick={(e) => e.stopPropagation()} className="hover:underline" style={{ color: "var(--text)" }}>{getName(m.home)}</Link>
                     <span style={{ color: "var(--muted)", fontWeight: 400 }}>vs</span>
                     <Flag id={m.away} h={14} />
-                    <span style={{ color: "var(--text)" }}>{getName(m.away)}</span>
+                    <Link href={`/team?id=${m.away}`} onClick={(e) => e.stopPropagation()} className="hover:underline" style={{ color: "var(--text)" }}>{getName(m.away)}</Link>
                   </div>
 
                   {hasProbs && (
