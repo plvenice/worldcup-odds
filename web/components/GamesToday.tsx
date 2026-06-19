@@ -242,7 +242,14 @@ interface Props {
 
 export default function GamesToday({ forecast }: Props) {
   const today = localToday();
-  const todayMatches = forecast.matches.filter((m) => m.date === today);
+  const todayMatches = forecast.matches
+    .filter((m) => m.date === today)
+    .sort((a, b) => {
+      if (!a.time_utc && !b.time_utc) return 0;
+      if (!a.time_utc) return 1;
+      if (!b.time_utc) return -1;
+      return a.time_utc < b.time_utc ? -1 : a.time_utc > b.time_utc ? 1 : 0;
+    });
 
   if (todayMatches.length === 0) return null;
 
