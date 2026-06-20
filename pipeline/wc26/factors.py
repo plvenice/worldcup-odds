@@ -18,9 +18,12 @@ ALT_PER_250M = 4.0         # Elo per 250m above 1000m vs unadapted opponent
 ALT_ADAPTED = {"MEX", "ECU", "COL"}  # high-altitude home leagues / capitals
 HEAT_INDEX_THRESHOLD_C = 32.0
 SURFACE_DR_SHRINK = 0.5    # dr *= 1 - (1-quality)*SHRINK  (equalizer)
-AUTO_INJURY_WEIGHT = 25.0  # flat Elo dock for API-detected injuries with unknown
-                           # player tier; manual entries in availability_overrides.json
-                           # take precedence and use the documented 45/30/15 tiers
+AUTO_INJURY_WEIGHT = 25.0       # fallback dock when prior-season minutes are unknown
+AUTO_INJURY_MIN_WEIGHT = 5.0    # fringe-squad floor -- still a rostered absence, never zero
+AUTO_INJURY_MAX_WEIGHT = 45.0   # cap = manual "franchise player" tier
+AUTO_INJURY_FULL_MINUTES = 2700.0  # ~30 league matches as an every-week starter
+                                    # manual entries in availability_overrides.json take
+                                    # precedence and use the documented 45/30/15 tiers
 
 
 def haversine_km(lat1, lon1, lat2, lon2):
@@ -30,6 +33,18 @@ def haversine_km(lat1, lon1, lat2, lon2):
     dl = math.radians(lon2 - lon1)
     a = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
     return 2 * r * math.asin(math.sqrt(a))
+
+
+def auto_injury_weight(season_minutes):
+    """Scale an auto-detected injury's Elo dock by the player's prior club
+    season minutes -- a proxy for how big a hole they leave. Heavy-minutes
+    starters dock close to the manual "franchise player" tier; fringe squad
+    players dock near zero. Falls back to the flat default when minutes are
+    unknown (lookup failed, or a young pro with no prior season)."""
+    if season_minutes is None:
+        return AUTO_INJURY_WEIGHT
+    frac = min(max(season_minutes / AUTO_INJURY_FULL_MINUTES, 0.0), 1.0)
+    return AUTO_INJURY_MIN_WEIGHT + frac * (AUTO_INJURY_MAX_WEIGHT - AUTO_INJURY_MIN_WEIGHT)
 
 
 def availability_penalty(team_id, overrides, on_date=None):

@@ -74,6 +74,32 @@ def test_merge_auto_injuries():
     assert usa["reason"] == "auto-detected (API-Football)"
 
 
+def test_merge_auto_injuries_normalizes_accents():
+    # manual entry uses the accented spelling; API returns it bare -- must
+    # still dedupe, or the same injury gets docked twice (once manual, once auto)
+    manual = [{"team": "FRA", "player": "Mbappé", "weight": 45, "until": None}]
+    auto = [{"team": "FRA", "player": "Mbappe", "player_id": 1}]
+    merged = forecast._merge_auto_injuries(manual, auto)
+    assert len(merged) == 1
+
+
+def test_merge_auto_injuries_scales_with_minutes():
+    auto = [{"team": "USA", "player": "Pulisic", "player_id": 9}]
+    lookup = {9: 2700.0}.get
+    merged = forecast._merge_auto_injuries([], auto, minutes_lookup=lookup)
+    assert merged[0]["weight"] == factors.AUTO_INJURY_MAX_WEIGHT
+
+
+def test_auto_injury_weight_scaling():
+    assert factors.auto_injury_weight(None) == factors.AUTO_INJURY_WEIGHT
+    assert factors.auto_injury_weight(0) == factors.AUTO_INJURY_MIN_WEIGHT
+    assert factors.auto_injury_weight(factors.AUTO_INJURY_FULL_MINUTES) == factors.AUTO_INJURY_MAX_WEIGHT
+    half = factors.auto_injury_weight(factors.AUTO_INJURY_FULL_MINUTES / 2)
+    assert factors.AUTO_INJURY_MIN_WEIGHT < half < factors.AUTO_INJURY_MAX_WEIGHT
+    # minutes beyond a full season don't push the dock past the manual cap
+    assert factors.auto_injury_weight(factors.AUTO_INJURY_FULL_MINUTES * 2) == factors.AUTO_INJURY_MAX_WEIGHT
+
+
 def test_blend_outcome():
     model = (0.5, 0.3, 0.2)
     market = (0.3, 0.3, 0.4)

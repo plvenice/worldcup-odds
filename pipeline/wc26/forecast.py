@@ -6,6 +6,7 @@
 """
 import csv
 import json
+import unicodedata
 import numpy as np
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -18,6 +19,7 @@ from .mc import simulate
 
 OUT = data.ROOT / "out"
 BLEND_LOG = OUT / "blend_log.json"
+INJURY_MINUTES_CACHE = OUT / "injury_minutes_cache.json"
 WEATHER_LOOKAHEAD_DAYS = 8
 
 
@@ -48,20 +50,65 @@ def _update_blend_log(fixtures):
                          encoding="utf-8")
 
 
-def _merge_auto_injuries(manual, auto):
+def _normalize_name(name):
+    """Casefold + strip diacritics so 'Mbappé' / 'Mbappe' / ' MBAPPE '
+    compare equal across a hand-entered name and the API's spelling."""
+    decomposed = unicodedata.normalize("NFKD", name or "")
+    return "".join(c for c in decomposed if not unicodedata.combining(c)).strip().casefold()
+
+
+def _load_minutes_cache():
+    try:
+        return json.loads(INJURY_MINUTES_CACHE.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def _save_minutes_cache(cache):
+    INJURY_MINUTES_CACHE.parent.mkdir(exist_ok=True)
+    INJURY_MINUTES_CACHE.write_text(json.dumps(cache, indent=1), encoding="utf-8")
+
+
+def _cached_minutes_lookup(cache):
+    """lookup(player_id) -> prior-season minutes, backed by `cache` (mutated
+    in place). Only successful lookups are cached -- a transient API miss
+    falls back to the flat default this run and is retried next time,
+    rather than permanently stranding that player at the default."""
+    def lookup(player_id):
+        if player_id is None:
+            return None
+        key = str(player_id)
+        if key in cache:
+            return cache[key]
+        minutes = apifootball.fetch_player_season_minutes(player_id)
+        if minutes is not None:
+            cache[key] = minutes
+        return minutes
+    return lookup
+
+
+def _merge_auto_injuries(manual, auto, minutes_lookup=None):
     """Append API-detected injuries not already covered by a manual entry.
-    Dedupes on exact (team, player) match; also guards against the API
-    returning the same player twice in one response."""
-    seen = {(o["team"], o.get("player", "")) for o in manual}
+
+    Dedupes on (team, normalized player name) so an accent/case/spacing
+    difference between a hand-entered name and the API's spelling doesn't
+    create a duplicate dock on top of the manual one; also guards against
+    the API returning the same player twice in one response.
+
+    minutes_lookup(player_id), when given, scales the dock via
+    factors.auto_injury_weight() instead of the flat fallback.
+    """
+    seen = {(o["team"], _normalize_name(o.get("player", ""))) for o in manual}
     merged = list(manual)
     for inj in auto:
-        key = (inj["team"], inj["player"])
+        key = (inj["team"], _normalize_name(inj["player"]))
         if key in seen:
             continue
         seen.add(key)
+        minutes = minutes_lookup(inj.get("player_id")) if minutes_lookup else None
         merged.append({
             "team": inj["team"], "player": inj["player"],
-            "weight": factors.AUTO_INJURY_WEIGHT, "until": None,
+            "weight": factors.auto_injury_weight(minutes), "until": None,
             "reason": "auto-detected (API-Football)",
         })
     return merged
@@ -71,7 +118,12 @@ def build_state(nsims_note=None, fetch_weather=True, h2h=None):
     by_id, ids = data.teams()
     venues = data.venues()
     groups = data.groups()
-    overrides = _merge_auto_injuries(data.availability(), apifootball.fetch_current_injuries())
+    minutes_cache = _load_minutes_cache()
+    overrides = _merge_auto_injuries(
+        data.availability(), apifootball.fetch_current_injuries(),
+        minutes_lookup=_cached_minutes_lookup(minutes_cache),
+    )
+    _save_minutes_cache(minutes_cache)
     fixtures, source = wiki.fetch_group_fixtures()
     fixtures.sort(key=lambda f: (f["date"] or "9999", f["id"]))
 

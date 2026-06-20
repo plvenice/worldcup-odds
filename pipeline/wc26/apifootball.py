@@ -15,6 +15,7 @@ from .odds import NAME_TO_ID as _ODDS_NAMES
 BASE = "https://v3.football.api-sports.io"
 WC_LEAGUE = 1
 SEASON = 2026
+PRIOR_CLUB_SEASON = SEASON - 1  # API-Football season-start-year convention
 
 # API-Football country-name spellings that differ from the odds feed.
 _EXTRA = {
@@ -126,7 +127,7 @@ def fetch_season_kickoffs():
 
 
 def fetch_current_injuries():
-    """Currently-reported WC injuries/unavailability: [{team, player}].
+    """Currently-reported WC injuries/unavailability: [{team, player, player_id}].
     team mapped to FIFA codes via _team_id(). [] on failure / no key."""
     if not os.environ.get("API_FOOTBALL_KEY"):
         return []
@@ -138,9 +139,38 @@ def fetch_current_injuries():
         out = []
         for it in r.json().get("response", []):
             tid = _team_id((it.get("team") or {}).get("name"))
-            pname = (it.get("player") or {}).get("name")
+            player = it.get("player") or {}
+            pname = player.get("name")
             if tid and pname:
-                out.append({"team": tid, "player": pname})
+                out.append({"team": tid, "player": pname, "player_id": player.get("id")})
         return out
     except Exception:
         return []
+
+
+def fetch_player_season_minutes(player_id, season=PRIOR_CLUB_SEASON):
+    """Total club minutes played by player_id in `season` (API-Football
+    season-start year), summed across every competition they appeared in.
+
+    Deliberately the prior CLUB season, not the in-progress World Cup --
+    using WC minutes would be circular: a player hurt in match 2 has
+    near-zero WC minutes *because* of the injury, which would understate
+    exactly the players who matter most. None on failure / no key / no data.
+    """
+    if not os.environ.get("API_FOOTBALL_KEY") or not player_id:
+        return None
+    try:
+        r = requests.get(f"{BASE}/players",
+                         params={"id": player_id, "season": season},
+                         headers=_headers(), timeout=15)
+        r.raise_for_status()
+        resp = r.json().get("response", [])
+        if not resp:
+            return None
+        minutes = sum(
+            (stat.get("games") or {}).get("minutes") or 0
+            for stat in (resp[0].get("statistics") or [])
+        )
+        return minutes or None
+    except Exception:
+        return None
