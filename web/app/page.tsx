@@ -74,7 +74,7 @@ const TODAY_NAV = {
 };
 
 export default function HomePage() {
-  const { forecast, history, loading, error, lastFetched, liveTitleUpdates, liveForecast } = useData();
+  const { forecast, history, loading, error, lastFetched, liveTitleUpdates, liveForecast, liveMatches } = useData();
   const [showInfo, setShowInfo] = useState(false);
 
   const hasTodayMatches = useMemo(() => {
@@ -149,7 +149,7 @@ export default function HomePage() {
         {forecast && (
           <>
             <div id="today">
-              <GamesToday forecast={forecast} />
+              <GamesToday forecast={forecast} liveMatches={liveMatches} />
             </div>
             <div id="title-race">
               <TitleRaceChart forecast={forecast} history={history} liveTitleUpdates={liveTitleUpdates} liveForecast={liveForecast} />

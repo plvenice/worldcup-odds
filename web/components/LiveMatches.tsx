@@ -3,24 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import { LineChart, Line, ResponsiveContainer, YAxis } from "recharts";
 import { Flag, getName } from "@/lib/flags";
+import type { LiveMatch } from "@/lib/types";
 
 // Set NEXT_PUBLIC_LIVE_URL to the Railway worker base URL (e.g.
 // https://worldcup-odds-worker.up.railway.app) to activate the live view.
 const LIVE_URL = process.env.NEXT_PUBLIC_LIVE_URL || "";
 const POLL_MS = 20000;
 
-interface LiveMatch {
-  home: string;
-  away: string;
-  hg: number;
-  ag: number;
-  minute: number;
-  status: string;
-  p_home?: number;
-  p_draw?: number;
-  p_away?: number;
-  group?: string;
-}
 interface LiveState {
   updated_at?: string;
   live: boolean;

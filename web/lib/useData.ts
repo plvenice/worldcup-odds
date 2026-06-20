@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import type { Forecast, HistoryRow, LiveForecast } from "./types";
+import type { Forecast, HistoryRow, LiveForecast, LiveMatch } from "./types";
 import { parseCsv } from "./utils";
 
 const REMOTE_BASE =
@@ -36,6 +36,7 @@ export interface DataState {
   lastFetched: Date | null;
   liveTitleUpdates: Record<string, number>;
   liveForecast: LiveForecast | null;
+  liveMatches: LiveMatch[];
 }
 
 export function useData(): DataState & { refresh: () => void } {
@@ -47,6 +48,7 @@ export function useData(): DataState & { refresh: () => void } {
     lastFetched: null,
     liveTitleUpdates: {},
     liveForecast: null,
+    liveMatches: [],
   });
 
   const load = useCallback(async () => {
@@ -84,9 +86,13 @@ export function useData(): DataState & { refresh: () => void } {
       ]);
 
       const updates: Record<string, number> = {};
+      let liveMatches: LiveMatch[] = [];
       if (liveRes.ok) {
         const j = await liveRes.json();
-        if (j?.live) Object.assign(updates, j.title_updates ?? {});
+        if (j?.live) {
+          Object.assign(updates, j.title_updates ?? {});
+          liveMatches = j.matches ?? [];
+        }
       }
 
       let liveForecast: LiveForecast | null = null;
@@ -95,7 +101,7 @@ export function useData(): DataState & { refresh: () => void } {
         if (j?.available) liveForecast = j;
       }
 
-      setState((s) => ({ ...s, liveTitleUpdates: updates, liveForecast }));
+      setState((s) => ({ ...s, liveTitleUpdates: updates, liveForecast, liveMatches }));
     } catch {
       /* worker unreachable -- keep last known state */
     }

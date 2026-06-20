@@ -163,3 +163,16 @@ export interface LiveForecast {
   groups_affected?: string[];
   elapsed_s?: number;
 }
+
+export interface LiveMatch {
+  home: string;
+  away: string;
+  hg: number;
+  ag: number;
+  minute: number;
+  status: string;
+  p_home?: number;
+  p_draw?: number;
+  p_away?: number;
+  group?: string;
+}

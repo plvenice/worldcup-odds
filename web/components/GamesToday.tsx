@@ -1,9 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import type { Forecast, Match } from "@/lib/types";
+import type { Forecast, LiveMatch, Match } from "@/lib/types";
 import { Flag, getName } from "@/lib/flags";
 import { fmtPct } from "@/lib/utils";
+
+/** Find m's live entry, if any, re-oriented so .home/.away always match m.home/m.away
+ * (API-Football's home/away labeling isn't assumed to agree with the pipeline's). */
+function findLive(m: Match, liveMatches: LiveMatch[]): LiveMatch | null {
+  const hit = liveMatches.find(
+    (lm) =>
+      (lm.home === m.home && lm.away === m.away) ||
+      (lm.home === m.away && lm.away === m.home)
+  );
+  if (!hit) return null;
+  if (hit.home === m.home) return hit;
+  return {
+    ...hit,
+    home: hit.away, away: hit.home,
+    hg: hit.ag, ag: hit.hg,
+    p_home: hit.p_away, p_away: hit.p_home,
+  };
+}
 
 const VENUES: Record<string, { name: string; city: string }> = {
   azteca:       { name: "Estadio Azteca",         city: "Mexico City" },
@@ -97,26 +115,37 @@ function StakesRow({ m, teamId }: { m: Match; teamId: string }) {
   );
 }
 
-function MatchCard({ m, forecast }: { m: Match; forecast: Forecast }) {
+function MatchCard({ m, live }: { m: Match; live: LiveMatch | null }) {
   const venue = VENUES[m.venue];
   const kickoff = fmtKickoff(m.time_utc);
   const hasStakes =
     !m.played &&
     !!m.leverage?.some((l) => l.team === m.home || l.team === m.away);
 
-  // Flag a winner for played matches
+  const isLive = !!live;
+  const hg = isLive ? live!.hg : m.hg;
+  const ag = isLive ? live!.ag : m.ag;
+  const showScore = m.played || isLive;
+
+  // Flag a winner for played matches (live in-progress score isn't final, so no highlight)
   const homeWon = m.played && m.hg != null && m.ag != null && m.hg > m.ag;
   const awayWon = m.played && m.hg != null && m.ag != null && m.ag > m.hg;
+
+  // Live probs win when available; otherwise fall back to the pre-match blend.
+  const probs = isLive && live!.p_home != null
+    ? { home: live!.p_home!, draw: live!.p_draw ?? 0, away: live!.p_away! }
+    : m.probs;
 
   return (
     <div
       style={{
         background: "var(--panel)",
-        border: "1px solid var(--border)",
+        border: `1px solid ${isLive ? "var(--red)" : "var(--border)"}`,
         borderRadius: 12,
         overflow: "hidden",
       }}
     >
+      {isLive && <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.25}}`}</style>}
       {/* Card header */}
       <div
         className="flex items-center justify-between px-3 py-2"
@@ -127,10 +156,20 @@ function MatchCard({ m, forecast }: { m: Match; forecast: Forecast }) {
           style={{ color: "var(--gold)", fontSize: 11 }}
         >
           Group {m.group}
-          {kickoff && (
-            <span style={{ color: "var(--muted)", fontWeight: 400, marginLeft: 6 }}>
-              · {kickoff}
+          {isLive ? (
+            <span className="inline-flex items-center gap-1" style={{ color: "var(--red)", fontWeight: 700, marginLeft: 6 }}>
+              <span
+                className="inline-block rounded-full"
+                style={{ width: 6, height: 6, background: "var(--red)", animation: "pulse 1.4s infinite" }}
+              />
+              {live!.status === "HT" ? "HT" : `${live!.minute}'`}
             </span>
+          ) : (
+            kickoff && (
+              <span style={{ color: "var(--muted)", fontWeight: 400, marginLeft: 6 }}>
+                · {kickoff}
+              </span>
+            )
           )}
         </span>
         <span style={{ color: "var(--muted)", fontSize: 11 }}>
@@ -161,12 +200,12 @@ function MatchCard({ m, forecast }: { m: Match; forecast: Forecast }) {
           </Link>
 
           {/* Score or vs */}
-          {m.played ? (
+          {showScore ? (
             <div
               className="shrink-0 text-center font-heading font-bold tabular-nums"
-              style={{ color: "var(--text)", fontSize: 22, minWidth: 60, letterSpacing: "0.02em" }}
+              style={{ color: isLive ? "var(--gold)" : "var(--text)", fontSize: 22, minWidth: 60, letterSpacing: "0.02em" }}
             >
-              {m.hg}&thinsp;–&thinsp;{m.ag}
+              {hg}&thinsp;–&thinsp;{ag}
             </div>
           ) : (
             <div
@@ -193,12 +232,12 @@ function MatchCard({ m, forecast }: { m: Match; forecast: Forecast }) {
           </Link>
         </div>
 
-        {/* Prob bar — unplayed only */}
-        {!m.played && m.probs && (
+        {/* Prob bar — any unplayed match with odds, live or pre-match */}
+        {!m.played && probs && (
           <ProbBar
-            home={m.probs.home}
-            draw={m.probs.draw}
-            away={m.probs.away}
+            home={probs.home}
+            draw={probs.draw}
+            away={probs.away}
             homeName={getName(m.home)}
             awayName={getName(m.away)}
           />
@@ -238,9 +277,10 @@ function fmtKickoff(timeUtc: string | null | undefined): string | null {
 
 interface Props {
   forecast: Forecast;
+  liveMatches?: LiveMatch[];
 }
 
-export default function GamesToday({ forecast }: Props) {
+export default function GamesToday({ forecast, liveMatches = [] }: Props) {
   const today = localToday();
   const todayMatches = forecast.matches
     .filter((m) => m.date === today)
@@ -255,6 +295,7 @@ export default function GamesToday({ forecast }: Props) {
 
   const played = todayMatches.filter((m) => m.played).length;
   const total  = todayMatches.length;
+  const liveCount = todayMatches.filter((m) => findLive(m, liveMatches)).length;
 
   return (
     <section id="today">
@@ -267,16 +308,21 @@ export default function GamesToday({ forecast }: Props) {
           className="font-heading font-normal text-sm"
           style={{ color: "var(--muted)", letterSpacing: 0 }}
         >
+          {liveCount > 0 && (
+            <span style={{ color: "var(--red)", fontWeight: 700, marginRight: 6 }}>
+              {liveCount} live
+            </span>
+          )}
           {played === total
             ? "all final"
-            : played === 0
+            : played === 0 && liveCount === 0
             ? `${total} match${total > 1 ? "es" : ""}`
             : `${played} / ${total} final`}
         </span>
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {todayMatches.map((m) => (
-          <MatchCard key={m.id} m={m} forecast={forecast} />
+          <MatchCard key={m.id} m={m} live={findLive(m, liveMatches)} />
         ))}
       </div>
     </section>
