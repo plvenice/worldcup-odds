@@ -37,6 +37,7 @@ jobs:
             git checkout origin/data -- market_h2h.json 2>/dev/null && mv market_h2h.json out/ || true
             git checkout origin/data -- cache_fixtures.json 2>/dev/null && cp cache_fixtures.json data/ && mv cache_fixtures.json out/ || true
             git checkout origin/data -- injury_minutes_cache.json 2>/dev/null && mv injury_minutes_cache.json out/ || true
+            git checkout origin/data -- blend_log.json 2>/dev/null && mv blend_log.json out/ || true
           fi
 
       - name: Run forecast
@@ -53,7 +54,7 @@ jobs:
           git config user.name "wc-odds-bot"
           git config user.email "actions@users.noreply.github.com"
           git add forecast.json history.csv
-          git add odds_state.json market.json market_h2h.json cache_fixtures.json injury_minutes_cache.json 2>/dev/null || true
+          git add odds_state.json market.json market_h2h.json cache_fixtures.json injury_minutes_cache.json blend_log.json 2>/dev/null || true
           git commit -m "refresh $(date -u +%FT%TZ)"
           git push --force "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" data
 # registered 2026-06-12
