@@ -73,6 +73,14 @@ function slotDesc(s: BracketSlot): string {
   return `3rd · ${(s.allowed ?? []).join("")}`;
 }
 
+// Monte Carlo frequency, no smoothing (see forecast.py top_dist) — a slot/match
+// genuinely locks to exactly 1.0 once the group finishes or the real match is
+// played, so this distinguishes "clinched" from merely heavily favored.
+const CLINCH_P = 0.999;
+function isClinched(dist: TeamDist[]): boolean {
+  return (dist[0]?.p ?? 0) >= CLINCH_P;
+}
+
 type NodeId = string;
 
 interface BNode {
@@ -101,6 +109,7 @@ function DetailPanel({
 }) {
   const isSlot = node.round === "slot";
   const venueData = node.venue ? VENUE[node.venue] : null;
+  const clinched = isClinched(node.dist);
 
   return (
     <div
@@ -119,11 +128,28 @@ function DetailPanel({
       {/* Header */}
       <div className="flex items-start justify-between gap-2 mb-2">
         <div>
-          <div
-            className="font-heading font-bold text-sm uppercase tracking-wide"
-            style={{ color: "var(--text)" }}
-          >
-            {isSlot ? "Slot" : `Match ${node.matchNum ?? ""}`}
+          <div className="flex items-center gap-1.5">
+            <div
+              className="font-heading font-bold text-sm uppercase tracking-wide"
+              style={{ color: "var(--text)" }}
+            >
+              {isSlot ? "Slot" : `Match ${node.matchNum ?? ""}`}
+            </div>
+            {clinched && (
+              <span
+                className="font-heading font-bold uppercase"
+                style={{
+                  color: "var(--green)",
+                  fontSize: 8.5,
+                  letterSpacing: "0.06em",
+                  border: "1px solid var(--green)",
+                  borderRadius: 4,
+                  padding: "1px 4px",
+                }}
+              >
+                Clinched
+              </span>
+            )}
           </div>
           {node.label && (
             <div style={{ color: "var(--muted)", fontSize: 10.5, marginTop: 1 }}>
@@ -162,7 +188,7 @@ function DetailPanel({
       {/* Probability distribution */}
       <div style={{ borderTop: "1px solid var(--border)", paddingTop: 8 }}>
         <div style={{ color: "var(--muted)", fontSize: 9.5, marginBottom: 4 }}>
-          {isSlot ? "Projected to fill this slot" : "Projected to advance"}
+          {clinched ? "Confirmed" : isSlot ? "Projected to fill this slot" : "Projected to advance"}
         </div>
         {node.dist.slice(0, 10).map((t, ti) => (
           <div
@@ -334,6 +360,7 @@ export default function BracketView({ forecast }: Props) {
       </h2>
       <p className="text-xs mb-3" style={{ color: "var(--muted)" }}>
         Each slot shows who is projected to fill it. Hover any node to trace that team; click for full odds, venue, and date.
+        A green <span style={{ color: "var(--green)", fontWeight: 700 }}>✓</span> means the spot is mathematically clinched, not just favored.
       </p>
 
       <div className="flex flex-col gap-4 items-start md:flex-row">
@@ -381,6 +408,7 @@ export default function BracketView({ forecast }: Props) {
               const isSelected = selected === n.id;
               const isLit = onPath(n);
               const isDim = hovered != null && !isLit;
+              const clinched = isClinched(n.dist);
               const top1 = n.dist[0];
               const top2 = n.dist[1];
 
@@ -394,13 +422,17 @@ export default function BracketView({ forecast }: Props) {
                     position: "absolute",
                     left: n.x, top: n.y,
                     width: n.w, height: n.h,
-                    background: isFinal
-                      ? "rgba(245,195,66,0.07)"
-                      : isSelected
+                    background: isSelected
                       ? "rgba(255,255,255,0.06)"
+                      : clinched
+                      ? "rgba(0,194,110,0.08)"
+                      : isFinal
+                      ? "rgba(245,195,66,0.07)"
                       : "var(--panel)",
                     border: `1px solid ${
                       isSelected
+                        ? "var(--green)"
+                        : clinched
                         ? "var(--green)"
                         : isLit
                         ? "var(--gold)"
@@ -435,9 +467,9 @@ export default function BracketView({ forecast }: Props) {
                       <span
                         className="truncate"
                         style={{
-                          color: isFinal ? "var(--gold)" : "var(--text)",
+                          color: clinched ? "var(--green)" : isFinal ? "var(--gold)" : "var(--text)",
                           fontSize: isSlot ? 10.5 : 12.5,
-                          fontWeight: 600,
+                          fontWeight: clinched ? 700 : 600,
                           flex: 1,
                           minWidth: 0,
                           overflow: "hidden",
@@ -447,9 +479,19 @@ export default function BracketView({ forecast }: Props) {
                       >
                         {getName(top1.team)}
                       </span>
-                      <span className="tabular shrink-0" style={{ color: "var(--muted)", fontSize: isSlot ? 9.5 : 10.5, paddingLeft: 2 }}>
-                        {(top1.p * 100).toFixed(0)}%
-                      </span>
+                      {clinched ? (
+                        <span
+                          className="shrink-0"
+                          title="Clinched — mathematically locked in, not just projected"
+                          style={{ color: "var(--green)", fontSize: isSlot ? 10 : 11, fontWeight: 700, paddingLeft: 2 }}
+                        >
+                          ✓
+                        </span>
+                      ) : (
+                        <span className="tabular shrink-0" style={{ color: "var(--muted)", fontSize: isSlot ? 9.5 : 10.5, paddingLeft: 2 }}>
+                          {(top1.p * 100).toFixed(0)}%
+                        </span>
+                      )}
                     </div>
                   ) : (
                     <div style={{ color: "var(--muted)", fontSize: 11 }}>TBD</div>
