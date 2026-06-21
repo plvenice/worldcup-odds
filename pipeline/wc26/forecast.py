@@ -122,7 +122,7 @@ def build_state(nsims_note=None, fetch_weather=True, h2h=None):
         minutes_lookup=_cached_minutes_lookup(minutes_cache),
     )
     _save_minutes_cache(minutes_cache)
-    fixtures, source = wiki.fetch_group_fixtures()
+    fixtures, source, stale_groups = wiki.fetch_group_fixtures()
     fixtures.sort(key=lambda f: (f["date"] or "9999", f["id"]))
 
     # --- live Elo: replay group results with tournament K-factor ---
@@ -245,6 +245,7 @@ def build_state(nsims_note=None, fetch_weather=True, h2h=None):
         "hosts": {t: t for t in ids if by_id[t].get("host")},
         "elo": elo,
         "source": source,
+        "stale_groups": stale_groups,
         "attributions": attributions,
         "n_blended": n_blended,
         "dc_ratings": dc_ratings,
@@ -368,6 +369,7 @@ def aggregate(state, res, nsims):
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "nsims": nsims,
         "results_source": state["source"],
+        "stale_groups": state["stale_groups"],
         "teams": sorted(teams_out, key=lambda x: -x["p_title"]),
         "groups": groups_out,
         "matches": matches_out,

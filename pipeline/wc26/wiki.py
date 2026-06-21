@@ -221,31 +221,59 @@ def parse_group_page(wikitext, group):
 
 def fetch_group_fixtures(use_cache_on_error=True):
     """All 72 group fixtures from the 12 Wikipedia group pages.
-    Caches to data/cache_fixtures.json; falls back to cache on network error."""
+
+    Each group's box count (expect 6) is validated independently. Wikipedia
+    group pages are edited live during match windows, so a single page can
+    transiently show the wrong box count mid-edit -- that used to make the
+    whole fetch raise and fall back to a stale cache for all 12 groups. Now
+    a group that fails validation gets one short retry, and only that group
+    (not the other 11) falls back to its own cached fixtures.
+    Caches to data/cache_fixtures.json; falls back to cache on network error.
+    """
+    import time as _time
+
     by_id, _ = data.teams()
     valid_ids = set(by_id)
-    fixtures = []
+    cached_by_group = {}
+    if CACHE.exists():
+        with open(CACHE, encoding="utf-8") as f:
+            for fx in json.load(f).get("fixtures", []):
+                cached_by_group.setdefault(fx["group"], []).append(fx)
+
+    titles = {f"2026 FIFA World Cup Group {g}": g for g in GROUPS}
     try:
-        titles = {f"2026 FIFA World Cup Group {g}": g for g in GROUPS}
         texts = _wikitext_many(list(titles))
-        for title, g in titles.items():
-            parsed = parse_group_page(texts[title], g)
-            good = [f for f in parsed if f["home"] in valid_ids and f["away"] in valid_ids]
-            if len(good) != 6:
-                raise ValueError(
-                    f"Group {g}: parsed {len(good)} valid fixtures (expected 6); "
-                    f"raw teams: {[(f['home'], f['away']) for f in parsed]}")
-            fixtures.extend(good)
-        with open(CACHE, "w", encoding="utf-8") as f:
-            json.dump({"fetched_at": datetime.utcnow().isoformat(),
-                       "fixtures": fixtures}, f, indent=1)
-        return fixtures, "wikipedia"
     except Exception as e:
-        if use_cache_on_error and CACHE.exists():
-            with open(CACHE, encoding="utf-8") as f:
-                cached = json.load(f)
-            return cached["fixtures"], f"cache ({e})"
+        if use_cache_on_error and cached_by_group:
+            all_cached = [fx for fxs in cached_by_group.values() for fx in fxs]
+            return all_cached, f"cache (fetch failed: {e})", {g: str(e) for g in GROUPS}
         raise
+
+    fixtures = []
+    stale = {}
+    for title, g in titles.items():
+        good = [f for f in parse_group_page(texts[title], g)
+                if f["home"] in valid_ids and f["away"] in valid_ids]
+        if len(good) != 6:
+            _time.sleep(8)  # likely mid-edit; give it a moment and re-fetch just this page
+            retried = parse_group_page(_wikitext(title), g)
+            good = [f for f in retried if f["home"] in valid_ids and f["away"] in valid_ids]
+        if len(good) == 6:
+            fixtures.extend(good)
+            continue
+        err = (f"parsed {len(good)} valid fixtures (expected 6); "
+               f"raw teams: {[(f['home'], f['away']) for f in good]}")
+        if g in cached_by_group:
+            fixtures.extend(cached_by_group[g])
+            stale[g] = err
+        else:
+            raise ValueError(f"Group {g}: {err}")
+
+    with open(CACHE, "w", encoding="utf-8") as f:
+        json.dump({"fetched_at": datetime.utcnow().isoformat(),
+                   "fixtures": fixtures}, f, indent=1)
+    source = "wikipedia" if not stale else f"wikipedia (stale: {', '.join(stale)})"
+    return fixtures, source, stale
 
 
 def fetch_knockout_fixtures(use_cache_on_error=True):
