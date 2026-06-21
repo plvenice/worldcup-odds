@@ -1,5 +1,6 @@
 """Static data loaders. All paths relative to repo root."""
 import json
+import unicodedata
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -9,6 +10,14 @@ DATA = ROOT / "data"
 def load_json(name):
     with open(DATA / name, encoding="utf-8") as f:
         return json.load(f)
+
+
+def normalize_name(name):
+    """Casefold + strip diacritics so 'Curaçao' / 'CURACAO' / 'Côte d'Ivoire'
+    compare equal against ASCII dict keys and each other, regardless of which
+    spelling a given data provider (API-Football, Odds API, Wikipedia) uses."""
+    decomposed = unicodedata.normalize("NFKD", name or "")
+    return "".join(c for c in decomposed if not unicodedata.combining(c)).strip().casefold()
 
 
 def teams():

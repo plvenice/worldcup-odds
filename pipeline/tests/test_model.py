@@ -9,6 +9,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from wc26 import matchmodel as mm
 from wc26 import factors
 from wc26 import forecast
+from wc26 import apifootball
+from wc26 import odds
 
 
 def test_outcome_probs_sum_to_one():
@@ -81,6 +83,19 @@ def test_merge_auto_injuries_normalizes_accents():
     auto = [{"team": "FRA", "player": "Mbappe", "player_id": 1}]
     merged = forecast._merge_auto_injuries(manual, auto)
     assert len(merged) == 1
+
+
+def test_apifootball_team_id_handles_diacritics():
+    # API-Football returns "Curaçao" with the cedilla -- the live worker
+    # silently dropped this fixture for the whole tournament because the
+    # lookup only lowercased instead of stripping diacritics (2026-06-20).
+    assert apifootball._team_id("Curaçao") == "CUW"
+    assert apifootball._team_id("CURAÇAO") == "CUW"
+    assert apifootball._team_id("Curacao") == "CUW"
+
+
+def test_odds_name_lookup_handles_diacritics():
+    assert odds.NAME_TO_ID.get(odds.data.normalize_name("Curaçao")) == "CUW"
 
 
 def test_merge_auto_injuries_scales_with_minutes():

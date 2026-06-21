@@ -10,6 +10,7 @@ from datetime import datetime, timedelta, timezone
 
 import requests
 
+from . import data
 from .odds import NAME_TO_ID as _ODDS_NAMES
 
 BASE = "https://v3.football.api-sports.io"
@@ -34,7 +35,7 @@ LIVE_STATUSES = {"1H", "2H", "ET", "BT", "P", "LIVE", "HT", "INT"}
 
 
 def _team_id(name):
-    return NAME_TO_ID.get((name or "").strip().lower())
+    return NAME_TO_ID.get(data.normalize_name(name))
 
 
 def _headers():
