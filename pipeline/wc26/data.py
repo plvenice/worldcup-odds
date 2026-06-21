@@ -12,12 +12,20 @@ def load_json(name):
         return json.load(f)
 
 
+_APOSTROPHE_VARIANTS = "‘’ʼ´`"  # ' ' ʼ ´ ` -> '
+
 def normalize_name(name):
     """Casefold + strip diacritics so 'Curaçao' / 'CURACAO' / 'Côte d'Ivoire'
     compare equal against ASCII dict keys and each other, regardless of which
-    spelling a given data provider (API-Football, Odds API, Wikipedia) uses."""
+    spelling a given data provider (API-Football, Odds API, Wikipedia) uses.
+
+    Also folds curly/typographic apostrophe variants to a plain ' -- NFKD
+    alone won't catch "Côte d'Ivoire" (curly quote) vs the dict's "cote
+    d'ivoire" (straight quote), since they aren't diacritic-related."""
     decomposed = unicodedata.normalize("NFKD", name or "")
-    return "".join(c for c in decomposed if not unicodedata.combining(c)).strip().casefold()
+    stripped = "".join(c for c in decomposed if not unicodedata.combining(c))
+    folded = stripped.translate({ord(c): "'" for c in _APOSTROPHE_VARIANTS})
+    return folded.strip().casefold()
 
 
 def teams():
