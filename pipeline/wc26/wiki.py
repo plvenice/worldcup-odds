@@ -139,8 +139,15 @@ def _wikitext(title):
     return _wikitext_many([title])[title]
 
 
-def _wikitext_many(titles):
-    """Batched fetch — MediaWiki allows up to 50 titles per request."""
+def _wikitext_many(titles, require_all=True):
+    """Batched fetch — MediaWiki allows up to 50 titles per request.
+
+    If require_all is False, a title the API didn't return (page move,
+    redirect, transient edge case) is simply omitted from the result instead
+    of failing the whole batch. Callers that can isolate per-title failures
+    (fetch_group_fixtures) should pass False; single-title callers want the
+    default strict behavior since there's nothing left to partially return.
+    """
     out = {}
     j = _api_get({
         "action": "query", "prop": "revisions", "rvprop": "content",
@@ -149,9 +156,10 @@ def _wikitext_many(titles):
     for page in j["query"]["pages"].values():
         if "revisions" in page:
             out[page["title"]] = page["revisions"][0]["slots"]["main"]["*"]
-    missing = [t for t in titles if t not in out]
-    if missing:
-        raise ValueError(f"No wikitext for: {missing}")
+    if require_all:
+        missing = [t for t in titles if t not in out]
+        if missing:
+            raise ValueError(f"No wikitext for: {missing}")
     return out
 
 
@@ -242,7 +250,10 @@ def fetch_group_fixtures(use_cache_on_error=True):
 
     titles = {f"2026 FIFA World Cup Group {g}": g for g in GROUPS}
     try:
-        texts = _wikitext_many(list(titles))
+        # require_all=False: a single missing title (page rename/redirect)
+        # must not nuke the other 11 groups' freshly fetched text either --
+        # it's handled the same as a bad box count, per group, below.
+        texts = _wikitext_many(list(titles), require_all=False)
     except Exception as e:
         if use_cache_on_error and cached_by_group:
             all_cached = [fx for fxs in cached_by_group.values() for fx in fxs]
@@ -252,12 +263,24 @@ def fetch_group_fixtures(use_cache_on_error=True):
     fixtures = []
     stale = {}
     for title, g in titles.items():
-        good = [f for f in parse_group_page(texts[title], g)
-                if f["home"] in valid_ids and f["away"] in valid_ids]
+        page_text = texts.get(title)
+        good = []
+        if page_text is not None:
+            good = [f for f in parse_group_page(page_text, g)
+                    if f["home"] in valid_ids and f["away"] in valid_ids]
         if len(good) != 6:
-            _time.sleep(8)  # likely mid-edit; give it a moment and re-fetch just this page
-            retried = parse_group_page(_wikitext(title), g)
-            good = [f for f in retried if f["home"] in valid_ids and f["away"] in valid_ids]
+            # Missing page or wrong box count -- likely mid-edit (live
+            # tournament pages are edited constantly). One short, isolated
+            # retry before falling back to this group's own cache. The
+            # retry itself must not raise past this point -- a timeout or
+            # genuinely-gone page here should degrade to this one group's
+            # cache fallback, not blow up the other 11 groups' results.
+            _time.sleep(8)
+            try:
+                retried = parse_group_page(_wikitext(title), g)
+                good = [f for f in retried if f["home"] in valid_ids and f["away"] in valid_ids]
+            except Exception:
+                good = []
         if len(good) == 6:
             fixtures.extend(good)
             continue

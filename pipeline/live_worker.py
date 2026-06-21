@@ -341,37 +341,48 @@ def compute_live(fixtures):
 
 
 def poll_loop():
+    """Runs forever in a daemon thread. Each iteration is isolated -- an
+    unexpected exception here used to kill the thread silently (the HTTP
+    server keeps responding "healthy" with frozen, ever-staler state, and
+    nothing restarts it since the process itself never exits). Now a bad
+    iteration just logs and retries on the next cycle, same as dispatch_loop.
+    """
     global _LINGER_UNTIL, _LAST_LIVE_TITLE_UPDATES
     refresh_lambdas(force=True)
     while True:
-        _refresh_season_kickoffs()
-        refresh_lambdas()
-        fixtures = apifootball.fetch_live()
-        matches, title_updates = compute_live(fixtures)
-        now = time.time()
-        is_live = len(matches) > 0
-        with _LOCK:
-            _STATE["updated_at"] = datetime.now(timezone.utc).isoformat()
-            _STATE["live"] = is_live
-            _STATE["matches"] = matches
+        sleep_for = LIVE_INTERVAL
+        try:
+            _refresh_season_kickoffs()
+            refresh_lambdas()
+            fixtures = apifootball.fetch_live()
+            matches, title_updates = compute_live(fixtures)
+            now = time.time()
+            is_live = len(matches) > 0
+            with _LOCK:
+                _STATE["updated_at"] = datetime.now(timezone.utc).isoformat()
+                _STATE["live"] = is_live
+                _STATE["matches"] = matches
+                if is_live:
+                    _STATE["title_updates"] = title_updates
+                    _LAST_LIVE_TITLE_UPDATES = dict(title_updates)
+                    _LINGER_UNTIL = now + _LINGER_SECS
+                elif now < _LINGER_UNTIL:
+                    # Hold last known conditioned values -- pipeline hasn't caught up yet
+                    _STATE["title_updates"] = _LAST_LIVE_TITLE_UPDATES
+                else:
+                    _STATE["title_updates"] = {}
+                    _LAST_LIVE_TITLE_UPDATES = {}
             if is_live:
-                _STATE["title_updates"] = title_updates
-                _LAST_LIVE_TITLE_UPDATES = dict(title_updates)
-                _LINGER_UNTIL = now + _LINGER_SECS
-            elif now < _LINGER_UNTIL:
-                # Hold last known conditioned values -- pipeline hasn't caught up yet
-                _STATE["title_updates"] = _LAST_LIVE_TITLE_UPDATES
+                threading.Thread(target=run_live_resim, daemon=True).start()
+                sleep_for = LIVE_INTERVAL
             else:
-                _STATE["title_updates"] = {}
-                _LAST_LIVE_TITLE_UPDATES = {}
-        if is_live:
-            threading.Thread(target=run_live_resim, daemon=True).start()
-            time.sleep(LIVE_INTERVAL)
-        else:
-            if now >= _LINGER_UNTIL:
-                with _LIVE_FORECAST_LOCK:
-                    _LIVE_FORECAST["available"] = False
-            time.sleep(_idle_sleep())
+                if now >= _LINGER_UNTIL:
+                    with _LIVE_FORECAST_LOCK:
+                        _LIVE_FORECAST["available"] = False
+                sleep_for = _idle_sleep()
+        except Exception as e:
+            print(f"poll_loop error: {e}", flush=True)
+        time.sleep(sleep_for)
 
 
 def _idle_sleep():
