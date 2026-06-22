@@ -94,14 +94,14 @@ export default function BiggestMover({ forecast, history }: Props) {
         {rose ? "▲" : "▼"}
       </span>
       <Flag id={bestTeam} h={14} />
-      <Link
-        href={`/team?id=${bestTeam}`}
-        className="hover:underline font-semibold"
-        style={{ color: "var(--text)" }}
-      >
-        {getName(bestTeam)}
-      </Link>
       <span style={{ color: "var(--muted)" }}>
+        <Link
+          href={`/team?id=${bestTeam}`}
+          className="hover:underline font-semibold"
+          style={{ color: "var(--text)" }}
+        >
+          {getName(bestTeam)}
+        </Link>
         &apos;s title chance {rose ? "rose" : "fell"} from {before.toFixed(1)}% to{" "}
         <span style={{ color: "var(--text)", fontWeight: 600 }}>{after.toFixed(1)}%</span> {window}
         {clause ? `, ${clause}` : ""}.
