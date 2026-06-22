@@ -48,6 +48,11 @@ _START_DATE_RE = re.compile(r"\{\{[Ss]tart date\|(\d{4})\|(\d{1,2})\|(\d{1,2})")
 _FIELD_RES = {f: re.compile(r"^\s*\|\s*" + f + r"\s*=\s*(.*)$", re.M)
               for f in ("date", "team1", "team2", "score", "stadium", "time")}
 _BOX_SPLIT_RE = re.compile(r"\{\{(?:#invoke:)?football box")
+# A high-profile/blowout match sometimes gets its own standalone article;
+# the group page then pulls its box in via {{#lst:Title|Section}} labeled-
+# section transclusion instead of keeping the {{football box}} inline. See
+# _resolve_transcluded.
+_LST_RE = re.compile(r"\{\{#lst:([^|}]+)\|")
 _KICKOFF_TIME_RE = re.compile(r"(\d{1,2}):(\d{2})")
 # Captures optional AM/PM suffix (handles "6:00 p.m." Wikipedia format, after
 # &nbsp;/NBSP entities are stripped -- see _parse_kickoff_utc_iso).
@@ -227,6 +232,35 @@ def parse_group_page(wikitext, group):
     return out
 
 
+def _resolve_transcluded(wikitext, group, valid_ids, found_pairs):
+    """Follow {{#lst:Title|Section}} transclusions on a group page.
+
+    A notable result (e.g. a blowout) sometimes gets its own standalone
+    Wikipedia article; the group page then pulls that match's box in via
+    labeled-section transclusion instead of keeping {{football box}} inline,
+    so the normal box-count parse never finds it again on the group page --
+    not transient, structural. The standalone article carries the same
+    {{football box}} template directly, just not wrapped for transclusion,
+    so it parses the same way once we fetch it.
+
+    Returns fixtures for pairs not already in found_pairs (mutated in place
+    as matches are found). Each transcluded title is fetched independently --
+    one missing/renamed target shouldn't block any of the others.
+    """
+    out = []
+    for t in {m.group(1).strip() for m in _LST_RE.finditer(wikitext)}:
+        try:
+            text = _wikitext(t)
+        except Exception:
+            continue
+        for f in parse_group_page(text, group):
+            pair = frozenset((f["home"], f["away"]))
+            if f["home"] in valid_ids and f["away"] in valid_ids and pair not in found_pairs:
+                out.append(f)
+                found_pairs.add(pair)
+    return out
+
+
 def fetch_group_fixtures(use_cache_on_error=True):
     """All 72 group fixtures from the 12 Wikipedia group pages.
 
@@ -234,8 +268,10 @@ def fetch_group_fixtures(use_cache_on_error=True):
     group pages are edited live during match windows, so a single page can
     transiently show the wrong box count mid-edit -- that used to make the
     whole fetch raise and fall back to a stale cache for all 12 groups. Now
-    a group that fails validation gets one short retry, and only that group
-    (not the other 11) falls back to its own cached fixtures.
+    a group that fails validation gets one short retry, then a check for
+    matches transcluded from their own standalone article (see
+    _resolve_transcluded), and only if all of that still comes up short does
+    that one group (not the other 11) fall back to its own cached fixtures.
     Caches to data/cache_fixtures.json; falls back to cache on network error.
     """
     import time as _time
@@ -277,11 +313,18 @@ def fetch_group_fixtures(use_cache_on_error=True):
             # cache fallback, not blow up the other 11 groups' results.
             _time.sleep(8)
             try:
-                retried = parse_group_page(_wikitext(title), g)
-                good = [f for f in retried if f["home"] in valid_ids and f["away"] in valid_ids]
+                page_text = _wikitext(title)
+                good = [f for f in parse_group_page(page_text, g)
+                        if f["home"] in valid_ids and f["away"] in valid_ids]
             except Exception:
-                good = []
+                pass  # keep whatever page_text/good we had; try transclusion below
+        if len(good) != 6 and page_text:
+            found_pairs = {frozenset((f["home"], f["away"])) for f in good}
+            good = good + _resolve_transcluded(page_text, g, valid_ids, found_pairs)
         if len(good) == 6:
+            good.sort(key=lambda f: (f["date"] or "9999", f["time_utc"] or ""))
+            for i, f in enumerate(good, 1):
+                f["id"] = f"{g}{i}"
             fixtures.extend(good)
             continue
         err = (f"parsed {len(good)} valid fixtures (expected 6); "
