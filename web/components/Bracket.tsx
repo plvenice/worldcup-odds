@@ -359,7 +359,7 @@ export default function BracketView({ forecast }: Props) {
         Bracket
       </h2>
       <p className="text-xs mb-3" style={{ color: "var(--muted)" }}>
-        Each slot shows who is projected to fill it. Hover any node to trace that team; click for full odds, venue, and date.
+        Each slot shows who is projected to fill it. Tap or hover any node to trace that team&apos;s path; tap again for full odds, venue, and date.
         A green <span style={{ color: "var(--green)", fontWeight: 700 }}>✓</span> means the spot is mathematically clinched, not just favored.
       </p>
 
@@ -415,9 +415,15 @@ export default function BracketView({ forecast }: Props) {
               return (
                 <div
                   key={n.id}
-                  onClick={() => setSelected(isSelected ? null : n.id)}
+                  onClick={() => {
+                    const next = isSelected ? null : n.id;
+                    setSelected(next);
+                    // Ties the path-trace to selection (not just hover) so tapping
+                    // on touch devices traces the team too, not only desktop hover.
+                    setHovered(next ? (top1?.team ?? null) : null);
+                  }}
                   onMouseEnter={() => setHovered(top1?.team ?? null)}
-                  onMouseLeave={() => setHovered(null)}
+                  onMouseLeave={() => setHovered(selectedNode?.dist[0]?.team ?? null)}
                   style={{
                     position: "absolute",
                     left: n.x, top: n.y,

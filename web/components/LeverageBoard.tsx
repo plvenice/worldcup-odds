@@ -109,6 +109,13 @@ function MarketCompare({ m }: { m: Match }) {
   );
 }
 
+function rankLabel(i: number): string {
+  if (i === 0) return "Biggest match";
+  if (i === 1) return "2nd biggest";
+  if (i === 2) return "3rd biggest";
+  return `${i + 1}th biggest`;
+}
+
 function LeverageDetail({ match }: { match: Match }) {
   if (!match.leverage?.length && !match.market_probs) return null;
 
@@ -126,7 +133,7 @@ function LeverageDetail({ match }: { match: Match }) {
           </div>
           <div className="flex gap-3 flex-wrap">
             <div>
-              <div style={{ color: "var(--muted)" }}>P(Title) by outcome</div>
+              <div style={{ color: "var(--muted)" }}>Title chance by result</div>
               <div className="flex gap-2 tabular">
                 <span style={{ color: "var(--green)" }}>H: {fmtPct(lev.p_title_by_outcome[0])}</span>
                 <span style={{ color: "var(--draw)" }}>D: {fmtPct(lev.p_title_by_outcome[1])}</span>
@@ -134,7 +141,7 @@ function LeverageDetail({ match }: { match: Match }) {
               </div>
             </div>
             <div>
-              <div style={{ color: "var(--muted)" }}>P(Advance) by outcome</div>
+              <div style={{ color: "var(--muted)" }}>Advance chance by result</div>
               <div className="flex gap-2 tabular">
                 <span style={{ color: "var(--green)" }}>H: {fmtPct(lev.p_advance_by_outcome[0])}</span>
                 <span style={{ color: "var(--draw)" }}>D: {fmtPct(lev.p_advance_by_outcome[1])}</span>
@@ -146,7 +153,7 @@ function LeverageDetail({ match }: { match: Match }) {
             <span>
               Title swing:{" "}
               <span style={{ color: lev.title_swing > 0.01 ? "var(--gold)" : "var(--muted)" }}>
-                {(lev.title_swing * 100).toFixed(2)}pp
+                {(lev.title_swing * 100).toFixed(2)} pts
               </span>
             </span>
             <span>
@@ -156,7 +163,7 @@ function LeverageDetail({ match }: { match: Match }) {
                   color: lev.advance_swing > 0.1 ? "var(--red)" : "var(--muted)",
                 }}
               >
-                {(lev.advance_swing * 100).toFixed(1)}pp
+                {(lev.advance_swing * 100).toFixed(1)} pts
               </span>
             </span>
           </div>
@@ -230,9 +237,12 @@ export default function LeverageBoard({ matches }: Props) {
           — what's at stake
         </span>
       </h2>
+      <p className="text-xs mb-3" style={{ color: "var(--muted)" }}>
+        The upcoming group matches most likely to shift the title race, ranked biggest first.
+      </p>
 
       <div className="flex flex-col gap-2">
-        {unplayed.map((m) => {
+        {unplayed.map((m, i) => {
           const isOpen = expanded.has(m.id);
           const hasProbs = !!m.probs;
 
@@ -286,9 +296,8 @@ export default function LeverageBoard({ matches }: Props) {
                   )}
                 </div>
 
-                {/* Leverage index */}
+                {/* Rank by leverage */}
                 <div className="shrink-0 text-right">
-                  <div className="text-xs" style={{ color: "var(--muted)" }}>Leverage</div>
                   <div
                     className="font-heading font-bold tabular"
                     style={{
@@ -296,10 +305,13 @@ export default function LeverageBoard({ matches }: Props) {
                         (m.leverage_index ?? 0) > 0.03
                           ? "var(--gold)"
                           : "var(--text)",
-                      fontSize: 16,
+                      fontSize: 13,
                     }}
                   >
-                    {((m.leverage_index ?? 0) * 100).toFixed(2)}
+                    {rankLabel(i)}
+                  </div>
+                  <div className="text-xs tabular" style={{ color: "var(--muted)" }} title="Leverage index — how much this result could move the title race">
+                    leverage {((m.leverage_index ?? 0) * 100).toFixed(2)}
                   </div>
                   <div className="text-xs" style={{ color: "var(--muted)" }}>
                     {isOpen ? "▲ hide" : "▼ detail"}

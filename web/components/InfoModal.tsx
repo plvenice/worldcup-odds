@@ -87,8 +87,8 @@ export default function InfoModal({ onClose }: Props) {
           <Section title="What the numbers mean">
             <ul className="flex flex-col gap-1.5 list-none ml-0">
               {[
-                ["P(title)", "Probability of winning the World Cup outright."],
-                ["P(advance)", "Probability of reaching the Round of 32 from the group stage."],
+                ["Title chance", "Probability of winning the World Cup outright. Sometimes shown as P(title)."],
+                ["Advance chance", "Probability of reaching the Round of 32 from the group stage. Sometimes shown as P(advance)."],
                 ["1st / 2nd / 3rd", "Breakdown of how a team advances: as group winner, runner-up, or best third-place finisher."],
                 ["Leverage board", "Which upcoming group-stage matches matter most for title contention, ranked by how much the result shifts winner probabilities."],
               ].map(([term, desc]) => (
