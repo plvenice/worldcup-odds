@@ -9,3 +9,6 @@ node_modules/
 .env.local
 pipeline/debug_wiki.py
 data/cache_fixtures.json
+data/cache_knockout.json
+data/cache_discipline.json
+.claude/

@@ -80,7 +80,7 @@ def goals_for_fixture(fx, sampled, nsims):
     return sampled[fx["id"]]
 
 
-def rank_group(group_fixtures, local_idx, sampled, nsims, rng):
+def rank_group(group_fixtures, local_idx, sampled, nsims, rng, fairplay=None):
     """Returns (order, pts, gd, gf): order is (nsims, 4) of local team idx,
     position 0 = group winner.
 
@@ -91,7 +91,10 @@ def rank_group(group_fixtures, local_idx, sampled, nsims, rng):
       4. H2H goals scored among pts-tied opponents
       5. Overall goal difference
       6. Overall goals scored
-      7. Lots (jitter)
+      7. Fair play points
+      8. Lots (jitter)
+
+    fairplay: optional {team_id: score}; teams absent default to 0.
     """
     pts = np.zeros((nsims, 4), dtype=np.int16)
     gf = np.zeros((nsims, 4), dtype=np.int16)
@@ -133,8 +136,11 @@ def rank_group(group_fixtures, local_idx, sampled, nsims, rng):
             h2h_s[:, a] += same_pts * h2h_gf[:, a, b]
 
     jit = rng.random((nsims, 4)).astype(np.float32)
+    members_by_local = sorted(local_idx, key=local_idx.get)
+    fp = np.array([(fairplay or {}).get(t, 0) for t in members_by_local], dtype=np.float64)
+    fp_b = np.broadcast_to(fp, (nsims, 4))
     # lexsort: last key = most significant
-    order = np.lexsort((jit, -gf, -gd, -h2h_s, -h2h_d, -h2h_p, -pts), axis=1)
+    order = np.lexsort((jit, -fp_b, -gf, -gd, -h2h_s, -h2h_d, -h2h_p, -pts), axis=1)
     return order, pts, gd, gf
 
 
@@ -157,6 +163,8 @@ def simulate(state, nsims=50000, seed=None):
     ratings = state["ratings"]
     group_letters = sorted(state["groups"].keys())
     res = SimResult(nsims, nteams)
+    fairplay = state.get("fairplay", {})
+    fairplay_global = np.array([fairplay.get(t, 0) for t in ids], dtype=np.float64)
 
     sampled = sample_remaining_fixtures(state["fixtures"], nsims, rng)
 
@@ -175,13 +183,14 @@ def simulate(state, nsims=50000, seed=None):
     t_pts = np.zeros((nsims, 12), dtype=np.int16)
     t_gd = np.zeros((nsims, 12), dtype=np.int16)
     t_gf = np.zeros((nsims, 12), dtype=np.int16)
+    t_fairplay = np.zeros((nsims, 12), dtype=np.float64)
     res.group_pos = np.zeros((nsims, nteams), dtype=np.int8)
 
     for gi, g in enumerate(group_letters):
         members = state["groups"][g]
         local_idx = {t: k for k, t in enumerate(members)}
         gfx = [f for f in state["fixtures"] if f["group"] == g]
-        order, pts, gd, gf = rank_group(gfx, local_idx, sampled, nsims, rng)
+        order, pts, gd, gf = rank_group(gfx, local_idx, sampled, nsims, rng, fairplay=fairplay)
         glob = np.array([tidx[t] for t in members], dtype=np.int16)
         ranked = glob[order]                      # (nsims, 4) global idx by position
         winners[:, gi] = ranked[:, 0]
@@ -194,10 +203,13 @@ def simulate(state, nsims=50000, seed=None):
         t_pts[:, gi] = pts[sims, third_local]
         t_gd[:, gi] = gd[sims, third_local]
         t_gf[:, gi] = gf[sims, third_local]
+        t_fairplay[:, gi] = fairplay_global[thirds[:, gi]]
 
     # --- rank thirds across groups, top 8 advance ---
+    # FIFA order: pts, gd, gf, fair play, FIFA World Ranking, lots. The World
+    # Ranking step has no data source in this repo -- falls through to jit.
     jit = rng.random((nsims, 12)).astype(np.float32)
-    third_order = np.lexsort((jit, -t_gf, -t_gd, -t_pts), axis=1)  # group indices
+    third_order = np.lexsort((jit, -t_fairplay, -t_gf, -t_gd, -t_pts), axis=1)  # group indices
     qual_groups = third_order[:, :8]                               # (nsims, 8)
     qual_mask = np.zeros((nsims, 12), dtype=bool)
     np.put_along_axis(qual_mask, qual_groups, True, axis=1)

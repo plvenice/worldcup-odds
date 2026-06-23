@@ -19,6 +19,8 @@ API = "https://en.wikipedia.org/w/api.php"
 UA = {"User-Agent": "worldcup-odds/1.0 (tournament probability model)"}
 CACHE = data.DATA / "cache_fixtures.json"
 KNOCKOUT_CACHE = data.DATA / "cache_knockout.json"
+DISCIPLINE_CACHE = data.DATA / "cache_discipline.json"
+THIRD_TABLE_PATH = data.DATA / "third_place_table.json"
 
 GROUPS = "ABCDEFGHIJKL"
 
@@ -295,3 +297,130 @@ def fetch_knockout_fixtures(use_cache_on_error=True):
             except Exception:
                 pass
         return []
+
+
+_DISCIPLINE_SECTION_RE = re.compile(r"==\s*Discipline\s*==(.*?)(?:\n==|\Z)", re.S)
+_FAIRPLAY_SCORE_RE = re.compile(r'!\s*style="[^"]*"\s*\|\s*([−–—+-]?\d+)')
+_DASH_RE = re.compile(r"[−–—]")
+
+
+def parse_group_discipline(wikitext, valid_ids):
+    """Parse a group page's '==Discipline==' wikitable into
+    {team_id: fairplay_score}.
+
+    Wikipedia editors already compute and publish each team's cumulative
+    conduct score (yellow=-1, 2nd yellow=-3, red=-4, yellow+red=-5, FIFA
+    regulations Art. 13.7) as the table's final column -- we read that total
+    directly rather than re-deriving it from the per-match card sub-columns.
+    A team absent from the result (no cards yet, or section not published
+    yet) should be treated as 0 by the caller, not as missing data.
+    """
+    sec = _DISCIPLINE_SECTION_RE.search(wikitext)
+    if not sec:
+        return {}
+    out = {}
+    for block in sec.group(1).split("|-"):
+        t = _parse_team(block)
+        if not t or t not in valid_ids:
+            continue
+        m = _FAIRPLAY_SCORE_RE.search(block)
+        if m:
+            out[t] = int(_DASH_RE.sub("-", m.group(1)))
+    return out
+
+
+def fetch_group_discipline(use_cache_on_error=True):
+    """Fair-play conduct scores from the same 12 Wikipedia group pages
+    fetch_group_fixtures() reads. Separate request (not threaded through
+    fetch_group_fixtures) so a parsing issue here can't affect the fixtures
+    path. Caches to data/cache_discipline.json; falls back to cache on
+    network error, same pattern as fetch_group_fixtures."""
+    by_id, _ = data.teams()
+    valid_ids = set(by_id)
+    try:
+        titles = {f"2026 FIFA World Cup Group {g}": g for g in GROUPS}
+        texts = _wikitext_many(list(titles))
+        scores = {}
+        for title in titles:
+            scores.update(parse_group_discipline(texts[title], valid_ids))
+        with open(DISCIPLINE_CACHE, "w", encoding="utf-8") as f:
+            json.dump({"fetched_at": datetime.utcnow().isoformat(),
+                       "scores": scores}, f, indent=1)
+        return scores
+    except Exception as e:
+        if use_cache_on_error and DISCIPLINE_CACHE.exists():
+            with open(DISCIPLINE_CACHE, encoding="utf-8") as f:
+                return json.load(f)["scores"]
+        raise
+
+
+_THIRD_TABLE_ROW_RE = re.compile(
+    r'!\s*scope="row"\s*\|\s*(\d+)\s*\n(.*?)(?=\n\|-|\n\|\}|\Z)', re.S)
+_BOLD_GROUP_RE = re.compile(r"^'''([A-L])'''$")
+
+
+def parse_third_place_table(wikitext, bracket_def):
+    """Parse FIFA's Annex C table (published on Wikipedia as
+    'Template:2026 FIFA World Cup third-place table') into
+    {sorted_8_group_string: {match_no_str: group_letter}}.
+
+    Column order is derived from bracket_def (the host group of each T-slot
+    match, alphabetically) rather than hardcoded, so it can't silently drift
+    from the actual bracket structure. Row 1 has a one-time rowspan spacer
+    cell ('! rowspan="495" |') splitting its data across two '|'-prefixed
+    lines instead of one; every other row is a single line. Splitting per
+    line and dropping any '!'-led line handles both shapes uniformly.
+    """
+    t_matches = [m for m in bracket_def["r32"] if m["away"]["type"] == "T"]
+    col_to_match = {m["home"]["group"]: m["match"] for m in t_matches}
+    col_order = sorted(col_to_match)  # e.g. ['A','B','D','E','G','I','K','L']
+    if len(col_order) != 8:
+        raise ValueError(f"Expected 8 third-place slots, found {len(col_order)}")
+
+    out = {}
+    for m in _THIRD_TABLE_ROW_RE.finditer(wikitext):
+        row_no, body = m.group(1), m.group(2)
+        cells = []
+        for line in body.split("\n"):
+            line = line.strip()
+            if not line or line.startswith("!"):
+                continue
+            if line.startswith("|"):
+                line = line[1:]
+            cells.extend(c.strip() for c in line.split("||"))
+        if len(cells) != 20:
+            raise ValueError(f"Row {row_no}: expected 20 cells, got {len(cells)}: {cells}")
+
+        group_cells, assign_cells = cells[:12], cells[12:]
+        qualifying = [g for g, c in zip(GROUPS, group_cells) if _BOLD_GROUP_RE.match(c)]
+        if len(qualifying) != 8:
+            raise ValueError(f"Row {row_no}: expected 8 qualifying groups, got {qualifying}")
+
+        slot_map = {}
+        for col, cell in zip(col_order, assign_cells):
+            if not re.fullmatch(r"3[A-L]", cell):
+                raise ValueError(f"Row {row_no}, col 1{col}: bad assignment cell {cell!r}")
+            slot_map[str(col_to_match[col])] = cell[1:]
+        if set(slot_map.values()) != set(qualifying):
+            raise ValueError(f"Row {row_no}: assignment groups {sorted(slot_map.values())} "
+                              f"!= qualifying groups {sorted(qualifying)}")
+
+        key = "".join(sorted(qualifying))
+        if key in out:
+            raise ValueError(f"Row {row_no}: duplicate combination {key}")
+        out[key] = slot_map
+
+    if len(out) != 495:
+        raise ValueError(f"Expected 495 combinations, parsed {len(out)}")
+    return out
+
+
+def fetch_third_place_table():
+    """One-time fetch: parse Annex C from Wikipedia and write
+    data/third_place_table.json. Static regulation data fixed before the
+    tournament started -- not part of the recurring refresh pipeline."""
+    wikitext = _wikitext("Template:2026 FIFA World Cup third-place table")
+    table = parse_third_place_table(wikitext, data.bracket())
+    with open(THIRD_TABLE_PATH, "w", encoding="utf-8") as f:
+        json.dump(table, f, indent=1, sort_keys=True)
+    return table

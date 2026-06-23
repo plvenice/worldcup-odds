@@ -72,3 +72,31 @@ def test_rank_thirds_top8():
     assert ranked[0] in ("T00", "T01")
     # T01 has higher gd (1%3=1 vs 0) -> T01 first
     assert ranked[0] == "T01"
+
+
+def test_rank_thirds_fairplay_breaks_tie():
+    # AAA and BBB tied on pts/gd/gf; AAA has the better (less-negative) conduct score
+    rows = [
+        {"team": "AAA", "pts": 4, "gd": 0, "gf": 3},
+        {"team": "BBB", "pts": 4, "gd": 0, "gf": 3},
+    ]
+    ranked = st.rank_thirds(rows, fairplay={"AAA": -2, "BBB": -9})
+    assert ranked[0] == "AAA"
+    # absent from fairplay dict -> treated as 0, beats a team with a real deduction
+    rows2 = [
+        {"team": "CCC", "pts": 4, "gd": 0, "gf": 3},
+        {"team": "DDD", "pts": 4, "gd": 0, "gf": 3},
+    ]
+    ranked2 = st.rank_thirds(rows2, fairplay={"DDD": -1})
+    assert ranked2[0] == "CCC"
+
+
+def test_rank_fairplay_breaks_group_tie():
+    # AAA and BBB tied on everything (pts/gd/gf and h2h, see test_three_way_tie_minitable
+    # style draw) except conduct score -- BBB has more cards, AAA ranks above.
+    results = [
+        ("AAA", "BBB", 0, 0), ("AAA", "CCC", 1, 0), ("AAA", "DDD", 1, 0),
+        ("BBB", "CCC", 1, 0), ("BBB", "DDD", 1, 0), ("CCC", "DDD", 0, 0),
+    ]
+    ranked = st.rank(TEAMS, results, fairplay={"AAA": -1, "BBB": -6})
+    assert ranked.index("AAA") < ranked.index("BBB")

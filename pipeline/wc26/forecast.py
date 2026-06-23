@@ -126,6 +126,7 @@ def build_state(nsims_note=None, fetch_weather=True, h2h=None):
     _save_minutes_cache(minutes_cache)
     fixtures, source = wiki.fetch_group_fixtures()
     fixtures.sort(key=lambda f: (f["date"] or "9999", f["id"]))
+    fairplay = wiki.fetch_group_discipline()
 
     # --- live Elo: replay group results with tournament K-factor ---
     elo = {t: float(by_id[t]["elo_seed"]) for t in ids}
@@ -247,6 +248,7 @@ def build_state(nsims_note=None, fetch_weather=True, h2h=None):
         "hosts": {t: t for t in ids if by_id[t].get("host")},
         "elo": elo,
         "source": source,
+        "fairplay": fairplay,
         "attributions": attributions,
         "n_blended": n_blended,
         "dc_ratings": dc_ratings,
@@ -291,7 +293,7 @@ def aggregate(state, res, nsims):
         played = [(f["home"], f["away"], f["hg"], f["ag"])
                   for f in state["fixtures"] if f["group"] == g and f["played"]]
         rows = {r["team"]: r for r in st.table(members, played)}
-        order = st.rank(members, played)
+        order = st.rank(members, played, fairplay=state.get("fairplay", {}))
         groups_out[g] = [rows[t] for t in order]
 
     # --- matches with probs + leverage ---
