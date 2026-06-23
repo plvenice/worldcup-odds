@@ -48,8 +48,9 @@ NAME_TO_ID = {
     "canada": "CAN", "bosnia and herzegovina": "BIH", "qatar": "QAT",
     "switzerland": "SUI", "brazil": "BRA", "morocco": "MAR", "haiti": "HAI",
     "scotland": "SCO", "usa": "USA", "united states": "USA", "paraguay": "PAR",
-    "australia": "AUS", "turkey": "TUR", "germany": "GER", "curacao": "CUW",
-    "ivory coast": "CIV", "ecuador": "ECU", "netherlands": "NED",
+    "australia": "AUS", "turkey": "TUR", "turkiye": "TUR",
+    "germany": "GER", "curacao": "CUW",
+    "ivory coast": "CIV", "cote d'ivoire": "CIV", "ecuador": "ECU", "netherlands": "NED",
     "japan": "JPN", "sweden": "SWE", "tunisia": "TUN", "belgium": "BEL",
     "egypt": "EGY", "iran": "IRN", "new zealand": "NZL", "spain": "ESP",
     "cape verde": "CPV", "saudi arabia": "KSA", "uruguay": "URU",
@@ -119,7 +120,7 @@ def fetch_outrights():
         for bm in events[0].get("bookmakers", []):
             for mk in bm.get("markets", []):
                 for oc in mk.get("outcomes", []):
-                    tid = NAME_TO_ID.get(oc["name"].strip().lower())
+                    tid = NAME_TO_ID.get(data.normalize_name(oc["name"]))
                     if tid and oc.get("price"):
                         per_team.setdefault(tid, []).append(float(oc["price"]))
         if not per_team:
@@ -164,8 +165,8 @@ def fetch_h2h():
         events = r.json() or []
         out = []
         for ev in events:
-            hid = NAME_TO_ID.get(ev.get("home_team", "").strip().lower())
-            aid = NAME_TO_ID.get(ev.get("away_team", "").strip().lower())
+            hid = NAME_TO_ID.get(data.normalize_name(ev.get("home_team", "")))
+            aid = NAME_TO_ID.get(data.normalize_name(ev.get("away_team", "")))
             if not hid or not aid:
                 continue
             home_o, draw_o, away_o = [], [], []
@@ -175,7 +176,7 @@ def fetch_h2h():
                         continue
                     price = {}
                     for oc in mk.get("outcomes", []):
-                        nm = oc["name"].strip().lower()
+                        nm = data.normalize_name(oc["name"])
                         if nm == "draw":
                             price["draw"] = float(oc["price"])
                         elif NAME_TO_ID.get(nm) == hid:

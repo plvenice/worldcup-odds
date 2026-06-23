@@ -6,7 +6,6 @@
 """
 import csv
 import json
-import unicodedata
 import numpy as np
 from datetime import date, datetime, timezone
 from pathlib import Path
@@ -53,8 +52,7 @@ def _update_blend_log(fixtures):
 def _normalize_name(name):
     """Casefold + strip diacritics so 'Mbappé' / 'Mbappe' / ' MBAPPE '
     compare equal across a hand-entered name and the API's spelling."""
-    decomposed = unicodedata.normalize("NFKD", name or "")
-    return "".join(c for c in decomposed if not unicodedata.combining(c)).strip().casefold()
+    return data.normalize_name(name)
 
 
 def _load_minutes_cache():
@@ -124,7 +122,7 @@ def build_state(nsims_note=None, fetch_weather=True, h2h=None):
         minutes_lookup=_cached_minutes_lookup(minutes_cache),
     )
     _save_minutes_cache(minutes_cache)
-    fixtures, source = wiki.fetch_group_fixtures()
+    fixtures, source, stale_groups = wiki.fetch_group_fixtures()
     fixtures.sort(key=lambda f: (f["date"] or "9999", f["id"]))
     fairplay = wiki.fetch_group_discipline()
 
@@ -249,6 +247,7 @@ def build_state(nsims_note=None, fetch_weather=True, h2h=None):
         "elo": elo,
         "source": source,
         "fairplay": fairplay,
+        "stale_groups": stale_groups,
         "attributions": attributions,
         "n_blended": n_blended,
         "dc_ratings": dc_ratings,
@@ -372,6 +371,7 @@ def aggregate(state, res, nsims):
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "nsims": nsims,
         "results_source": state["source"],
+        "stale_groups": state["stale_groups"],
         "teams": sorted(teams_out, key=lambda x: -x["p_title"]),
         "groups": groups_out,
         "matches": matches_out,

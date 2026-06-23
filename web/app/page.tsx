@@ -3,6 +3,8 @@
 import { useState, useMemo } from "react";
 import { useData } from "@/lib/useData";
 import Header from "@/components/Header";
+import FollowedTeam from "@/components/FollowedTeam";
+import BiggestMover from "@/components/BiggestMover";
 import LiveMatches from "@/components/LiveMatches";
 import GamesToday from "@/components/GamesToday";
 import TitleRaceChart from "@/components/TitleRaceChart";
@@ -95,6 +97,11 @@ export default function HomePage() {
       {showInfo && <InfoModal onClose={() => setShowInfo(false)} />}
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-3 py-4 flex flex-col gap-8">
+        <div className="flex flex-col gap-3">
+          <FollowedTeam forecast={forecast} liveMatches={liveMatches} />
+          <BiggestMover forecast={forecast} history={history} />
+        </div>
+
         <LiveMatches />
 
         {/* Section nav */}

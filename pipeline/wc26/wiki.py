@@ -50,6 +50,11 @@ _START_DATE_RE = re.compile(r"\{\{[Ss]tart date\|(\d{4})\|(\d{1,2})\|(\d{1,2})")
 _FIELD_RES = {f: re.compile(r"^\s*\|\s*" + f + r"\s*=\s*(.*)$", re.M)
               for f in ("date", "team1", "team2", "score", "stadium", "time")}
 _BOX_SPLIT_RE = re.compile(r"\{\{(?:#invoke:)?football box")
+# A high-profile/blowout match sometimes gets its own standalone article;
+# the group page then pulls its box in via {{#lst:Title|Section}} labeled-
+# section transclusion instead of keeping the {{football box}} inline. See
+# _resolve_transcluded.
+_LST_RE = re.compile(r"\{\{#lst:([^|}]+)\|")
 _KICKOFF_TIME_RE = re.compile(r"(\d{1,2}):(\d{2})")
 # Captures optional AM/PM suffix (handles "6:00 p.m." Wikipedia format, after
 # &nbsp;/NBSP entities are stripped -- see _parse_kickoff_utc_iso).
@@ -141,8 +146,15 @@ def _wikitext(title):
     return _wikitext_many([title])[title]
 
 
-def _wikitext_many(titles):
-    """Batched fetch — MediaWiki allows up to 50 titles per request."""
+def _wikitext_many(titles, require_all=True):
+    """Batched fetch — MediaWiki allows up to 50 titles per request.
+
+    If require_all is False, a title the API didn't return (page move,
+    redirect, transient edge case) is simply omitted from the result instead
+    of failing the whole batch. Callers that can isolate per-title failures
+    (fetch_group_fixtures) should pass False; single-title callers want the
+    default strict behavior since there's nothing left to partially return.
+    """
     out = {}
     j = _api_get({
         "action": "query", "prop": "revisions", "rvprop": "content",
@@ -151,9 +163,10 @@ def _wikitext_many(titles):
     for page in j["query"]["pages"].values():
         if "revisions" in page:
             out[page["title"]] = page["revisions"][0]["slots"]["main"]["*"]
-    missing = [t for t in titles if t not in out]
-    if missing:
-        raise ValueError(f"No wikitext for: {missing}")
+    if require_all:
+        missing = [t for t in titles if t not in out]
+        if missing:
+            raise ValueError(f"No wikitext for: {missing}")
     return out
 
 
@@ -221,33 +234,114 @@ def parse_group_page(wikitext, group):
     return out
 
 
+def _resolve_transcluded(wikitext, group, valid_ids, found_pairs):
+    """Follow {{#lst:Title|Section}} transclusions on a group page.
+
+    A notable result (e.g. a blowout) sometimes gets its own standalone
+    Wikipedia article; the group page then pulls that match's box in via
+    labeled-section transclusion instead of keeping {{football box}} inline,
+    so the normal box-count parse never finds it again on the group page --
+    not transient, structural. The standalone article carries the same
+    {{football box}} template directly, just not wrapped for transclusion,
+    so it parses the same way once we fetch it.
+
+    Returns fixtures for pairs not already in found_pairs (mutated in place
+    as matches are found). Each transcluded title is fetched independently --
+    one missing/renamed target shouldn't block any of the others.
+    """
+    out = []
+    for t in {m.group(1).strip() for m in _LST_RE.finditer(wikitext)}:
+        try:
+            text = _wikitext(t)
+        except Exception:
+            continue
+        for f in parse_group_page(text, group):
+            pair = frozenset((f["home"], f["away"]))
+            if f["home"] in valid_ids and f["away"] in valid_ids and pair not in found_pairs:
+                out.append(f)
+                found_pairs.add(pair)
+    return out
+
+
 def fetch_group_fixtures(use_cache_on_error=True):
     """All 72 group fixtures from the 12 Wikipedia group pages.
-    Caches to data/cache_fixtures.json; falls back to cache on network error."""
+
+    Each group's box count (expect 6) is validated independently. Wikipedia
+    group pages are edited live during match windows, so a single page can
+    transiently show the wrong box count mid-edit -- that used to make the
+    whole fetch raise and fall back to a stale cache for all 12 groups. Now
+    a group that fails validation gets one short retry, then a check for
+    matches transcluded from their own standalone article (see
+    _resolve_transcluded), and only if all of that still comes up short does
+    that one group (not the other 11) fall back to its own cached fixtures.
+    Caches to data/cache_fixtures.json; falls back to cache on network error.
+    """
+    import time as _time
+
     by_id, _ = data.teams()
     valid_ids = set(by_id)
-    fixtures = []
+    cached_by_group = {}
+    if CACHE.exists():
+        with open(CACHE, encoding="utf-8") as f:
+            for fx in json.load(f).get("fixtures", []):
+                cached_by_group.setdefault(fx["group"], []).append(fx)
+
+    titles = {f"2026 FIFA World Cup Group {g}": g for g in GROUPS}
     try:
-        titles = {f"2026 FIFA World Cup Group {g}": g for g in GROUPS}
-        texts = _wikitext_many(list(titles))
-        for title, g in titles.items():
-            parsed = parse_group_page(texts[title], g)
-            good = [f for f in parsed if f["home"] in valid_ids and f["away"] in valid_ids]
-            if len(good) != 6:
-                raise ValueError(
-                    f"Group {g}: parsed {len(good)} valid fixtures (expected 6); "
-                    f"raw teams: {[(f['home'], f['away']) for f in parsed]}")
-            fixtures.extend(good)
-        with open(CACHE, "w", encoding="utf-8") as f:
-            json.dump({"fetched_at": datetime.utcnow().isoformat(),
-                       "fixtures": fixtures}, f, indent=1)
-        return fixtures, "wikipedia"
+        # require_all=False: a single missing title (page rename/redirect)
+        # must not nuke the other 11 groups' freshly fetched text either --
+        # it's handled the same as a bad box count, per group, below.
+        texts = _wikitext_many(list(titles), require_all=False)
     except Exception as e:
-        if use_cache_on_error and CACHE.exists():
-            with open(CACHE, encoding="utf-8") as f:
-                cached = json.load(f)
-            return cached["fixtures"], f"cache ({e})"
+        if use_cache_on_error and cached_by_group:
+            all_cached = [fx for fxs in cached_by_group.values() for fx in fxs]
+            return all_cached, f"cache (fetch failed: {e})", {g: str(e) for g in GROUPS}
         raise
+
+    fixtures = []
+    stale = {}
+    for title, g in titles.items():
+        page_text = texts.get(title)
+        good = []
+        if page_text is not None:
+            good = [f for f in parse_group_page(page_text, g)
+                    if f["home"] in valid_ids and f["away"] in valid_ids]
+        if len(good) != 6:
+            # Missing page or wrong box count -- likely mid-edit (live
+            # tournament pages are edited constantly). One short, isolated
+            # retry before falling back to this group's own cache. The
+            # retry itself must not raise past this point -- a timeout or
+            # genuinely-gone page here should degrade to this one group's
+            # cache fallback, not blow up the other 11 groups' results.
+            _time.sleep(8)
+            try:
+                page_text = _wikitext(title)
+                good = [f for f in parse_group_page(page_text, g)
+                        if f["home"] in valid_ids and f["away"] in valid_ids]
+            except Exception:
+                pass  # keep whatever page_text/good we had; try transclusion below
+        if len(good) != 6 and page_text:
+            found_pairs = {frozenset((f["home"], f["away"])) for f in good}
+            good = good + _resolve_transcluded(page_text, g, valid_ids, found_pairs)
+        if len(good) == 6:
+            good.sort(key=lambda f: (f["date"] or "9999", f["time_utc"] or ""))
+            for i, f in enumerate(good, 1):
+                f["id"] = f"{g}{i}"
+            fixtures.extend(good)
+            continue
+        err = (f"parsed {len(good)} valid fixtures (expected 6); "
+               f"raw teams: {[(f['home'], f['away']) for f in good]}")
+        if g in cached_by_group:
+            fixtures.extend(cached_by_group[g])
+            stale[g] = err
+        else:
+            raise ValueError(f"Group {g}: {err}")
+
+    with open(CACHE, "w", encoding="utf-8") as f:
+        json.dump({"fetched_at": datetime.utcnow().isoformat(),
+                   "fixtures": fixtures}, f, indent=1)
+    source = "wikipedia" if not stale else f"wikipedia (stale: {', '.join(stale)})"
+    return fixtures, source, stale
 
 
 def fetch_knockout_fixtures(use_cache_on_error=True):
@@ -333,21 +427,31 @@ def fetch_group_discipline(use_cache_on_error=True):
     """Fair-play conduct scores from the same 12 Wikipedia group pages
     fetch_group_fixtures() reads. Separate request (not threaded through
     fetch_group_fixtures) so a parsing issue here can't affect the fixtures
-    path. Caches to data/cache_discipline.json; falls back to cache on
-    network error, same pattern as fetch_group_fixtures."""
+    path. require_all=False so one group's page hiccuping (same transient
+    mid-edit class of issue fetch_group_fixtures isolates) doesn't blank out
+    the other 11 groups' scores -- they just keep their last-known value
+    (merged onto the previous cache) until the next refresh. Caches to
+    data/cache_discipline.json; falls back to the full cache only if the
+    request fails outright."""
     by_id, _ = data.teams()
     valid_ids = set(by_id)
     try:
         titles = {f"2026 FIFA World Cup Group {g}": g for g in GROUPS}
-        texts = _wikitext_many(list(titles))
-        scores = {}
+        texts = _wikitext_many(list(titles), require_all=False)
+        prev = {}
+        if DISCIPLINE_CACHE.exists():
+            with open(DISCIPLINE_CACHE, encoding="utf-8") as f:
+                prev = json.load(f).get("scores", {})
+        scores = dict(prev)
         for title in titles:
-            scores.update(parse_group_discipline(texts[title], valid_ids))
+            page_text = texts.get(title)
+            if page_text is not None:
+                scores.update(parse_group_discipline(page_text, valid_ids))
         with open(DISCIPLINE_CACHE, "w", encoding="utf-8") as f:
             json.dump({"fetched_at": datetime.utcnow().isoformat(),
                        "scores": scores}, f, indent=1)
         return scores
-    except Exception as e:
+    except Exception:
         if use_cache_on_error and DISCIPLINE_CACHE.exists():
             with open(DISCIPLINE_CACHE, encoding="utf-8") as f:
                 return json.load(f)["scores"]

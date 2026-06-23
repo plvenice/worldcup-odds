@@ -117,8 +117,8 @@ function TeamContent() {
           </div>
         </div>
         <div className="ml-auto flex gap-6">
-          <Stat label="P(title)" value={fmtPct(team.p_title)} accent="var(--gold)" />
-          <Stat label="P(advance)" value={fmtPct(team.p_advance)} accent="var(--green)" />
+          <Stat label="Title chance" value={fmtPct(team.p_title)} accent="var(--gold)" />
+          <Stat label="Advance chance" value={fmtPct(team.p_advance)} accent="var(--green)" />
           <Stat
             label="Elo"
             value={fmtElo(team.elo)}
@@ -250,7 +250,7 @@ function TeamContent() {
                     fontSize: 12,
                   }}
                   labelFormatter={(label) => fmtShortDate(String(label))}
-                  formatter={(v) => [`${Number(v).toFixed(2)}%`, "P(title)"]}
+                  formatter={(v) => [`${Number(v).toFixed(2)}%`, "Title chance"]}
                 />
                 {!isLeader && leaderPct > 0 && (
                   <ReferenceLine

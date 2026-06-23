@@ -109,7 +109,7 @@ function StakesRow({ m, teamId }: { m: Match; teamId: string }) {
         style={{ color: swingPp >= 35 ? "var(--gold)" : "var(--muted)" }}
         title="Advance probability swing (best minus worst outcome)"
       >
-        ↕{swingPp}pp
+        ↕{swingPp} pts
       </span>
     </div>
   );

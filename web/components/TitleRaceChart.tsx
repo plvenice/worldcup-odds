@@ -308,7 +308,7 @@ export default function TitleRaceChart({ forecast, history, liveTitleUpdates = {
           className="font-heading font-semibold text-sm uppercase tracking-wide mb-3"
           style={{ color: "var(--muted)" }}
         >
-          P(Title) Over Time — Top 8
+          Title Chances Over Time — Top 8
         </div>
 
         {lineData.length < 2 ? (

@@ -34,7 +34,7 @@ import os
 import sys
 import threading
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -63,6 +63,7 @@ RESIM_NSIMS = 5000
 WC2026_HOSTS = {"USA", "CAN", "MEX"}
 
 SEASON_KICKOFFS_INTERVAL = 21600  # refresh full schedule every 6h
+RECENT_KICKOFF_WINDOW_MIN = 150  # 90 min + ET + stoppage + provider-lag buffer
 
 
 def dispatch_loop():
@@ -340,46 +341,71 @@ def compute_live(fixtures):
 
 
 def poll_loop():
+    """Runs forever in a daemon thread. Each iteration is isolated -- an
+    unexpected exception here used to kill the thread silently (the HTTP
+    server keeps responding "healthy" with frozen, ever-staler state, and
+    nothing restarts it since the process itself never exits). Now a bad
+    iteration just logs and retries on the next cycle, same as dispatch_loop.
+    """
     global _LINGER_UNTIL, _LAST_LIVE_TITLE_UPDATES
     refresh_lambdas(force=True)
     while True:
-        _refresh_season_kickoffs()
-        refresh_lambdas()
-        fixtures = apifootball.fetch_live()
-        matches, title_updates = compute_live(fixtures)
-        now = time.time()
-        is_live = len(matches) > 0
-        with _LOCK:
-            _STATE["updated_at"] = datetime.now(timezone.utc).isoformat()
-            _STATE["live"] = is_live
-            _STATE["matches"] = matches
+        sleep_for = LIVE_INTERVAL
+        try:
+            _refresh_season_kickoffs()
+            refresh_lambdas()
+            fixtures = apifootball.fetch_live()
+            matches, title_updates = compute_live(fixtures)
+            now = time.time()
+            is_live = len(matches) > 0
+            with _LOCK:
+                _STATE["updated_at"] = datetime.now(timezone.utc).isoformat()
+                _STATE["live"] = is_live
+                _STATE["matches"] = matches
+                if is_live:
+                    _STATE["title_updates"] = title_updates
+                    _LAST_LIVE_TITLE_UPDATES = dict(title_updates)
+                    _LINGER_UNTIL = now + _LINGER_SECS
+                elif now < _LINGER_UNTIL:
+                    # Hold last known conditioned values -- pipeline hasn't caught up yet
+                    _STATE["title_updates"] = _LAST_LIVE_TITLE_UPDATES
+                else:
+                    _STATE["title_updates"] = {}
+                    _LAST_LIVE_TITLE_UPDATES = {}
             if is_live:
-                _STATE["title_updates"] = title_updates
-                _LAST_LIVE_TITLE_UPDATES = dict(title_updates)
-                _LINGER_UNTIL = now + _LINGER_SECS
-            elif now < _LINGER_UNTIL:
-                # Hold last known conditioned values -- pipeline hasn't caught up yet
-                _STATE["title_updates"] = _LAST_LIVE_TITLE_UPDATES
+                threading.Thread(target=run_live_resim, daemon=True).start()
+                sleep_for = LIVE_INTERVAL
             else:
-                _STATE["title_updates"] = {}
-                _LAST_LIVE_TITLE_UPDATES = {}
-        if is_live:
-            threading.Thread(target=run_live_resim, daemon=True).start()
-            time.sleep(LIVE_INTERVAL)
-        else:
-            if now >= _LINGER_UNTIL:
-                with _LIVE_FORECAST_LOCK:
-                    _LIVE_FORECAST["available"] = False
-            time.sleep(_idle_sleep())
+                if now >= _LINGER_UNTIL:
+                    with _LIVE_FORECAST_LOCK:
+                        _LIVE_FORECAST["available"] = False
+                sleep_for = _idle_sleep()
+        except Exception as e:
+            print(f"poll_loop error: {e}", flush=True)
+        time.sleep(sleep_for)
 
 
 def _idle_sleep():
+    """How long to sleep before the next poll, when no match is currently live.
+
+    A kickoff that just passed isn't necessarily safe to ignore: API-Football's
+    status field can take a few seconds (or in practice, occasionally longer)
+    to flip from "not started" to live. If we only looked at the *next future*
+    kickoff, a match starting exactly between two polls would fall out of
+    `future` the instant it kicked off and the worker would go idle for up to
+    IDLE_INTERVAL -- missing the live window right when it matters most. So
+    any kickoff within the last _LIVE_MATCH_WINDOW_MIN keeps polling fast
+    regardless of what poll_loop's own is_live check saw a moment ago.
+    """
     try:
         now = datetime.now(timezone.utc)
         with _SEASON_KICKOFFS_LOCK:
             kicks = list(_SEASON_KICKOFFS)
         if not kicks:
             kicks = apifootball.fetch_today_kickoffs()
+        recent = [k for k in kicks if now - timedelta(minutes=RECENT_KICKOFF_WINDOW_MIN) <= k <= now]
+        if recent:
+            return LIVE_INTERVAL
         future = [k for k in kicks if k > now]
         if future:
             secs = (future[0] - now).total_seconds() - 120

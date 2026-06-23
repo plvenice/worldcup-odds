@@ -9,6 +9,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from wc26 import matchmodel as mm
 from wc26 import factors
 from wc26 import forecast
+from wc26 import apifootball
+from wc26 import odds
+from wc26 import data
 
 
 def test_outcome_probs_sum_to_one():
@@ -81,6 +84,52 @@ def test_merge_auto_injuries_normalizes_accents():
     auto = [{"team": "FRA", "player": "Mbappe", "player_id": 1}]
     merged = forecast._merge_auto_injuries(manual, auto)
     assert len(merged) == 1
+
+
+def test_apifootball_team_id_handles_diacritics():
+    # API-Football returns "Curaçao" with the cedilla -- the live worker
+    # silently dropped this fixture for the whole tournament because the
+    # lookup only lowercased instead of stripping diacritics (2026-06-20).
+    assert apifootball._team_id("Curaçao") == "CUW"
+    assert apifootball._team_id("CURAÇAO") == "CUW"
+    assert apifootball._team_id("Curacao") == "CUW"
+
+
+def test_odds_name_lookup_handles_diacritics():
+    assert odds.NAME_TO_ID.get(odds.data.normalize_name("Curaçao")) == "CUW"
+
+
+# Real-world official/press spellings most likely to reach us with
+# diacritics or typographic punctuation a data provider didn't ASCII-fy.
+# Curly apostrophe (Côte d’Ivoire) and straight (Côte d'Ivoire) both occur
+# in the wild depending on the source's house style.
+_ACCENTED_NAME_CASES = [
+    ("Curaçao", "CUW"),
+    ("CURAÇAO", "CUW"),
+    ("Côte d'Ivoire", "CIV"),
+    ("Côte d’Ivoire", "CIV"),  # curly apostrophe
+    ("Türkiye", "TUR"),
+    ("México", "MEX"),
+]
+
+
+@pytest.mark.parametrize("raw,expected_id", _ACCENTED_NAME_CASES)
+def test_normalize_name_handles_known_accented_spellings(raw, expected_id):
+    assert odds.NAME_TO_ID.get(data.normalize_name(raw)) == expected_id
+
+
+def test_every_wc26_team_resolves_via_name_lookup():
+    # Guards the failure mode that hid the Curacao bug all tournament: a
+    # team silently missing (or unreachable) from NAME_TO_ID drops every
+    # one of its fixtures from live tracking and market-odds blending,
+    # with no error -- fetch_live()/fetch_h2h() just return fewer rows.
+    by_id, ids = data.teams()
+    for tid in ids:
+        name = by_id[tid]["name"]
+        assert odds.NAME_TO_ID.get(data.normalize_name(name)) == tid, (
+            f"{tid} ({name}) not resolvable via NAME_TO_ID")
+        assert apifootball._team_id(name) == tid, (
+            f"{tid} ({name}) not resolvable via apifootball._team_id")
 
 
 def test_merge_auto_injuries_scales_with_minutes():
