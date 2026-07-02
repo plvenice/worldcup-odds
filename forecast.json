@@ -1,0 +1,3471 @@
+{
+ "generated_at": "2026-07-02T07:51:18.302204+00:00",
+ "nsims": 50000,
+ "results_source": "wikipedia",
+ "stale_groups": {},
+ "teams": [
+  {
+   "id": "ARG",
+   "name": "Argentina",
+   "group": "J",
+   "elo": 2155.9,
+   "elo_seed": 2115,
+   "attack": 1.723,
+   "defense": 0.4703,
+   "p_title": 0.17932,
+   "p_final": 0.29356,
+   "p_sf": 0.45606,
+   "p_qf": 0.66746,
+   "p_r16": 0.86408,
+   "p_r32": 1.0,
+   "p_group_win": 1.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "FRA",
+   "name": "France",
+   "group": "I",
+   "elo": 2137.7,
+   "elo_seed": 2063,
+   "attack": 1.8566,
+   "defense": 0.5674,
+   "p_title": 0.14444,
+   "p_final": 0.2404,
+   "p_sf": 0.38526,
+   "p_qf": 0.54848,
+   "p_r16": 0.7797,
+   "p_r32": 1.0,
+   "p_group_win": 1.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "ESP",
+   "name": "Spain",
+   "group": "H",
+   "elo": 2140.9,
+   "elo_seed": 2157,
+   "attack": 1.4919,
+   "defense": 0.417,
+   "p_title": 0.1248,
+   "p_final": 0.20594,
+   "p_sf": 0.33492,
+   "p_qf": 0.4641,
+   "p_r16": 0.72488,
+   "p_r32": 1.0,
+   "p_group_win": 1.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "ENG",
+   "name": "England",
+   "group": "L",
+   "elo": 2040.9,
+   "elo_seed": 2024,
+   "attack": 1.4812,
+   "defense": 0.7075,
+   "p_title": 0.06424,
+   "p_final": 0.12246,
+   "p_sf": 0.23682,
+   "p_qf": 0.40312,
+   "p_r16": 0.73588,
+   "p_r32": 1.0,
+   "p_group_win": 1.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "COL",
+   "name": "Colombia",
+   "group": "K",
+   "elo": 2009.3,
+   "elo_seed": 1982,
+   "attack": 1.2153,
+   "defense": 0.5595,
+   "p_title": 0.06396,
+   "p_final": 0.1287,
+   "p_sf": 0.23668,
+   "p_qf": 0.48714,
+   "p_r16": 0.80796,
+   "p_r32": 1.0,
+   "p_group_win": 1.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "NED",
+   "name": "Netherlands",
+   "group": "F",
+   "elo": 1989.7,
+   "elo_seed": 1948,
+   "attack": 1.6944,
+   "defense": 0.8899,
+   "p_title": 0.05144,
+   "p_final": 0.10622,
+   "p_sf": 0.20292,
+   "p_qf": 0.42622,
+   "p_r16": 0.58286,
+   "p_r32": 1.0,
+   "p_group_win": 1.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "BRA",
+   "name": "Brazil",
+   "group": "C",
+   "elo": 2013.0,
+   "elo_seed": 1991,
+   "attack": 1.4874,
+   "defense": 0.5972,
+   "p_title": 0.05022,
+   "p_final": 0.0988,
+   "p_sf": 0.19958,
+   "p_qf": 0.36082,
+   "p_r16": 0.57876,
+   "p_r32": 1.0,
+   "p_group_win": 1.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "POR",
+   "name": "Portugal",
+   "group": "K",
+   "elo": 1990.1,
+   "elo_seed": 1989,
+   "attack": 1.4057,
+   "defense": 0.5857,
+   "p_title": 0.0388,
+   "p_final": 0.07932,
+   "p_sf": 0.1606,
+   "p_qf": 0.25892,
+   "p_r16": 0.57348,
+   "p_r32": 1.0,
+   "p_group_win": 0.0,
+   "p_group_second": 1.0,
+   "p_third_advance": 0.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "MEX",
+   "name": "Mexico",
+   "group": "A",
+   "elo": 1926.8,
+   "elo_seed": 1881,
+   "attack": 1.2689,
+   "defense": 0.5879,
+   "p_title": 0.0299,
+   "p_final": 0.07014,
+   "p_sf": 0.15754,
+   "p_qf": 0.3184,
+   "p_r16": 0.57768,
+   "p_r32": 1.0,
+   "p_group_win": 1.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "SUI",
+   "name": "Switzerland",
+   "group": "B",
+   "elo": 1917.7,
+   "elo_seed": 1891,
+   "attack": 1.259,
+   "defense": 0.8893,
+   "p_title": 0.02518,
+   "p_final": 0.05842,
+   "p_sf": 0.1226,
+   "p_qf": 0.2993,
+   "p_r16": 0.59958,
+   "p_r32": 1.0,
+   "p_group_win": 1.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "NOR",
+   "name": "Norway",
+   "group": "I",
+   "elo": 1919.1,
+   "elo_seed": 1914,
+   "attack": 1.5253,
+   "defense": 1.1684,
+   "p_title": 0.02494,
+   "p_final": 0.05744,
+   "p_sf": 0.13486,
+   "p_qf": 0.28234,
+   "p_r16": 0.62586,
+   "p_r32": 1.0,
+   "p_group_win": 0.0,
+   "p_group_second": 1.0,
+   "p_third_advance": 0.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "GER",
+   "name": "Germany",
+   "group": "E",
+   "elo": 1910.4,
+   "elo_seed": 1932,
+   "attack": 1.7112,
+   "defense": 1.0665,
+   "p_title": 0.02356,
+   "p_final": 0.05596,
+   "p_sf": 0.12494,
+   "p_qf": 0.23198,
+   "p_r16": 0.58048,
+   "p_r32": 1.0,
+   "p_group_win": 1.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "USA",
+   "name": "United States",
+   "group": "D",
+   "elo": 1805.2,
+   "elo_seed": 1726,
+   "attack": 1.5182,
+   "defense": 1.104,
+   "p_title": 0.02166,
+   "p_final": 0.0538,
+   "p_sf": 0.12816,
+   "p_qf": 0.3425,
+   "p_r16": 0.68098,
+   "p_r32": 1.0,
+   "p_group_win": 1.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "MAR",
+   "name": "Morocco",
+   "group": "C",
+   "elo": 1889.1,
+   "elo_seed": 1827,
+   "attack": 1.3051,
+   "defense": 0.8986,
+   "p_title": 0.02048,
+   "p_final": 0.04844,
+   "p_sf": 0.11062,
+   "p_qf": 0.27484,
+   "p_r16": 0.41714,
+   "p_r32": 1.0,
+   "p_group_win": 0.0,
+   "p_group_second": 1.0,
+   "p_third_advance": 0.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "BEL",
+   "name": "Belgium",
+   "group": "G",
+   "elo": 1881.6,
+   "elo_seed": 1894,
+   "attack": 1.2124,
+   "defense": 0.7989,
+   "p_title": 0.02018,
+   "p_final": 0.04952,
+   "p_sf": 0.11788,
+   "p_qf": 0.30156,
+   "p_r16": 0.53142,
+   "p_r32": 1.0,
+   "p_group_win": 1.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "JPN",
+   "name": "Japan",
+   "group": "F",
+   "elo": 1908.8,
+   "elo_seed": 1906,
+   "attack": 1.312,
+   "defense": 0.8027,
+   "p_title": 0.0191,
+   "p_final": 0.04638,
+   "p_sf": 0.1097,
+   "p_qf": 0.23088,
+   "p_r16": 0.42124,
+   "p_r32": 1.0,
+   "p_group_win": 0.0,
+   "p_group_second": 1.0,
+   "p_third_advance": 0.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "ECU",
+   "name": "Ecuador",
+   "group": "E",
+   "elo": 1894.9,
+   "elo_seed": 1938,
+   "attack": 0.8447,
+   "defense": 0.75,
+   "p_title": 0.01566,
+   "p_final": 0.03786,
+   "p_sf": 0.0917,
+   "p_qf": 0.20136,
+   "p_r16": 0.42232,
+   "p_r32": 1.0,
+   "p_group_win": 0.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 1.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "CRO",
+   "name": "Croatia",
+   "group": "L",
+   "elo": 1903.1,
+   "elo_seed": 1912,
+   "attack": 1.2901,
+   "defense": 1.1328,
+   "p_title": 0.01538,
+   "p_final": 0.03802,
+   "p_sf": 0.08914,
+   "p_qf": 0.1643,
+   "p_r16": 0.42652,
+   "p_r32": 1.0,
+   "p_group_win": 0.0,
+   "p_group_second": 1.0,
+   "p_third_advance": 0.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "SEN",
+   "name": "Senegal",
+   "group": "I",
+   "elo": 1838.5,
+   "elo_seed": 1860,
+   "attack": 1.4405,
+   "defense": 1.1169,
+   "p_title": 0.01292,
+   "p_final": 0.03508,
+   "p_sf": 0.08884,
+   "p_qf": 0.25132,
+   "p_r16": 0.46858,
+   "p_r32": 1.0,
+   "p_group_win": 0.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 1.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "AUT",
+   "name": "Austria",
+   "group": "J",
+   "elo": 1837.0,
+   "elo_seed": 1830,
+   "attack": 1.2816,
+   "defense": 1.1497,
+   "p_title": 0.00828,
+   "p_final": 0.02176,
+   "p_sf": 0.05614,
+   "p_qf": 0.11268,
+   "p_r16": 0.27512,
+   "p_r32": 1.0,
+   "p_group_win": 0.0,
+   "p_group_second": 1.0,
+   "p_third_advance": 0.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "AUS",
+   "name": "Australia",
+   "group": "D",
+   "elo": 1799.4,
+   "elo_seed": 1777,
+   "attack": 0.8202,
+   "defense": 0.8073,
+   "p_title": 0.00814,
+   "p_final": 0.02386,
+   "p_sf": 0.0631,
+   "p_qf": 0.15906,
+   "p_r16": 0.53852,
+   "p_r32": 1.0,
+   "p_group_win": 0.0,
+   "p_group_second": 1.0,
+   "p_third_advance": 0.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "PAR",
+   "name": "Paraguay",
+   "group": "D",
+   "elo": 1804.2,
+   "elo_seed": 1834,
+   "attack": 0.8457,
+   "defense": 1.0158,
+   "p_title": 0.00784,
+   "p_final": 0.02328,
+   "p_sf": 0.06088,
+   "p_qf": 0.1327,
+   "p_r16": 0.41952,
+   "p_r32": 1.0,
+   "p_group_win": 0.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 1.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "ALG",
+   "name": "Algeria",
+   "group": "J",
+   "elo": 1788.6,
+   "elo_seed": 1772,
+   "attack": 1.149,
+   "defense": 1.27,
+   "p_title": 0.00606,
+   "p_final": 0.01846,
+   "p_sf": 0.0508,
+   "p_qf": 0.15886,
+   "p_r16": 0.40042,
+   "p_r32": 1.0,
+   "p_group_win": 0.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 1.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "CAN",
+   "name": "Canada",
+   "group": "B",
+   "elo": 1734.2,
+   "elo_seed": 1767,
+   "attack": 1.2284,
+   "defense": 1.0494,
+   "p_title": 0.0058,
+   "p_final": 0.02038,
+   "p_sf": 0.0619,
+   "p_qf": 0.21076,
+   "p_r16": 0.623,
+   "p_r32": 1.0,
+   "p_group_win": 0.0,
+   "p_group_second": 1.0,
+   "p_third_advance": 0.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "EGY",
+   "name": "Egypt",
+   "group": "G",
+   "elo": 1752.5,
+   "elo_seed": 1696,
+   "attack": 1.0329,
+   "defense": 1.0047,
+   "p_title": 0.00486,
+   "p_final": 0.01652,
+   "p_sf": 0.04594,
+   "p_qf": 0.12084,
+   "p_r16": 0.46148,
+   "p_r32": 1.0,
+   "p_group_win": 0.0,
+   "p_group_second": 1.0,
+   "p_third_advance": 0.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "CIV",
+   "name": "Ivory Coast",
+   "group": "E",
+   "elo": 1754.8,
+   "elo_seed": 1695,
+   "attack": 0.9387,
+   "defense": 0.8787,
+   "p_title": 0.00398,
+   "p_final": 0.01406,
+   "p_sf": 0.04418,
+   "p_qf": 0.12596,
+   "p_r16": 0.37414,
+   "p_r32": 1.0,
+   "p_group_win": 0.0,
+   "p_group_second": 1.0,
+   "p_third_advance": 0.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "SWE",
+   "name": "Sweden",
+   "group": "F",
+   "elo": 1747.9,
+   "elo_seed": 1712,
+   "attack": 1.2528,
+   "defense": 1.3294,
+   "p_title": 0.00372,
+   "p_final": 0.01216,
+   "p_sf": 0.03608,
+   "p_qf": 0.08684,
+   "p_r16": 0.2203,
+   "p_r32": 1.0,
+   "p_group_win": 0.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 1.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "COD",
+   "name": "DR Congo",
+   "group": "K",
+   "elo": 1725.8,
+   "elo_seed": 1652,
+   "attack": 0.9978,
+   "defense": 0.9736,
+   "p_title": 0.00192,
+   "p_final": 0.00708,
+   "p_sf": 0.02562,
+   "p_qf": 0.07712,
+   "p_r16": 0.26412,
+   "p_r32": 1.0,
+   "p_group_win": 0.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 1.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "BIH",
+   "name": "Bosnia and Herzegovina",
+   "group": "B",
+   "elo": 1638.1,
+   "elo_seed": 1616,
+   "attack": 0.9253,
+   "defense": 1.4372,
+   "p_title": 0.0012,
+   "p_final": 0.00592,
+   "p_sf": 0.02432,
+   "p_qf": 0.10462,
+   "p_r16": 0.31902,
+   "p_r32": 1.0,
+   "p_group_win": 0.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 1.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "CPV",
+   "name": "Cape Verde",
+   "group": "H",
+   "elo": 1631.9,
+   "elo_seed": 1578,
+   "attack": 0.7279,
+   "defense": 0.9973,
+   "p_title": 0.001,
+   "p_final": 0.0039,
+   "p_sf": 0.01458,
+   "p_qf": 0.05264,
+   "p_r16": 0.13592,
+   "p_r32": 1.0,
+   "p_group_win": 0.0,
+   "p_group_second": 1.0,
+   "p_third_advance": 0.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "RSA",
+   "name": "South Africa",
+   "group": "A",
+   "elo": 1577.6,
+   "elo_seed": 1511,
+   "attack": 0.6559,
+   "defense": 1.2322,
+   "p_title": 0.00062,
+   "p_final": 0.0038,
+   "p_sf": 0.0174,
+   "p_qf": 0.08818,
+   "p_r16": 0.377,
+   "p_r32": 1.0,
+   "p_group_win": 0.0,
+   "p_group_second": 1.0,
+   "p_third_advance": 0.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "GHA",
+   "name": "Ghana",
+   "group": "L",
+   "elo": 1590.0,
+   "elo_seed": 1510,
+   "attack": 0.6827,
+   "defense": 1.0262,
+   "p_title": 0.0004,
+   "p_final": 0.00236,
+   "p_sf": 0.01024,
+   "p_qf": 0.0547,
+   "p_r16": 0.19204,
+   "p_r32": 1.0,
+   "p_group_win": 0.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 1.0,
+   "p_advance": 1.0
+  },
+  {
+   "id": "KOR",
+   "name": "South Korea",
+   "group": "A",
+   "elo": 1675.9,
+   "elo_seed": 1715,
+   "attack": 0.7133,
+   "defense": 1.1238,
+   "p_title": 0.0,
+   "p_final": 0.0,
+   "p_sf": 0.0,
+   "p_qf": 0.0,
+   "p_r16": 0.0,
+   "p_r32": 0.0,
+   "p_group_win": 0.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 0.0
+  },
+  {
+   "id": "CZE",
+   "name": "Czechia",
+   "group": "A",
+   "elo": 1638.8,
+   "elo_seed": 1712,
+   "attack": 0.7208,
+   "defense": 1.5114,
+   "p_title": 0.0,
+   "p_final": 0.0,
+   "p_sf": 0.0,
+   "p_qf": 0.0,
+   "p_r16": 0.0,
+   "p_r32": 0.0,
+   "p_group_win": 0.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 0.0
+  },
+  {
+   "id": "QAT",
+   "name": "Qatar",
+   "group": "B",
+   "elo": 1404.9,
+   "elo_seed": 1421,
+   "attack": 0.5489,
+   "defense": 2.0852,
+   "p_title": 0.0,
+   "p_final": 0.0,
+   "p_sf": 0.0,
+   "p_qf": 0.0,
+   "p_r16": 0.0,
+   "p_r32": 0.0,
+   "p_group_win": 0.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 0.0
+  },
+  {
+   "id": "HAI",
+   "name": "Haiti",
+   "group": "C",
+   "elo": 1509.9,
+   "elo_seed": 1548,
+   "attack": 0.6693,
+   "defense": 1.7229,
+   "p_title": 0.0,
+   "p_final": 0.0,
+   "p_sf": 0.0,
+   "p_qf": 0.0,
+   "p_r16": 0.0,
+   "p_r32": 0.0,
+   "p_group_win": 0.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 0.0
+  },
+  {
+   "id": "SCO",
+   "name": "Scotland",
+   "group": "C",
+   "elo": 1735.9,
+   "elo_seed": 1782,
+   "attack": 0.6622,
+   "defense": 1.061,
+   "p_title": 0.0,
+   "p_final": 0.0,
+   "p_sf": 0.0,
+   "p_qf": 0.0,
+   "p_r16": 0.0,
+   "p_r32": 0.0,
+   "p_group_win": 0.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 0.0
+  },
+  {
+   "id": "TUR",
+   "name": "Turkey",
+   "group": "D",
+   "elo": 1839.3,
+   "elo_seed": 1911,
+   "attack": 0.9991,
+   "defense": 1.1122,
+   "p_title": 0.0,
+   "p_final": 0.0,
+   "p_sf": 0.0,
+   "p_qf": 0.0,
+   "p_r16": 0.0,
+   "p_r32": 0.0,
+   "p_group_win": 0.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 0.0
+  },
+  {
+   "id": "CUW",
+   "name": "Curacao",
+   "group": "E",
+   "elo": 1438.9,
+   "elo_seed": 1434,
+   "attack": 0.502,
+   "defense": 1.913,
+   "p_title": 0.0,
+   "p_final": 0.0,
+   "p_sf": 0.0,
+   "p_qf": 0.0,
+   "p_r16": 0.0,
+   "p_r32": 0.0,
+   "p_group_win": 0.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 0.0
+  },
+  {
+   "id": "TUN",
+   "name": "Tunisia",
+   "group": "F",
+   "elo": 1547.6,
+   "elo_seed": 1628,
+   "attack": 0.6533,
+   "defense": 1.9088,
+   "p_title": 0.0,
+   "p_final": 0.0,
+   "p_sf": 0.0,
+   "p_qf": 0.0,
+   "p_r16": 0.0,
+   "p_r32": 0.0,
+   "p_group_win": 0.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 0.0
+  },
+  {
+   "id": "IRN",
+   "name": "Iran",
+   "group": "G",
+   "elo": 1763.0,
+   "elo_seed": 1772,
+   "attack": 0.8379,
+   "defense": 0.9708,
+   "p_title": 0.0,
+   "p_final": 0.0,
+   "p_sf": 0.0,
+   "p_qf": 0.0,
+   "p_r16": 0.0,
+   "p_r32": 0.0,
+   "p_group_win": 0.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 0.0
+  },
+  {
+   "id": "NZL",
+   "name": "New Zealand",
+   "group": "G",
+   "elo": 1526.9,
+   "elo_seed": 1562,
+   "attack": 0.8863,
+   "defense": 1.9964,
+   "p_title": 0.0,
+   "p_final": 0.0,
+   "p_sf": 0.0,
+   "p_qf": 0.0,
+   "p_r16": 0.0,
+   "p_r32": 0.0,
+   "p_group_win": 0.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 0.0
+  },
+  {
+   "id": "KSA",
+   "name": "Saudi Arabia",
+   "group": "H",
+   "elo": 1600.6,
+   "elo_seed": 1576,
+   "attack": 0.6209,
+   "defense": 1.3388,
+   "p_title": 0.0,
+   "p_final": 0.0,
+   "p_sf": 0.0,
+   "p_qf": 0.0,
+   "p_r16": 0.0,
+   "p_r32": 0.0,
+   "p_group_win": 0.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 0.0
+  },
+  {
+   "id": "URU",
+   "name": "Uruguay",
+   "group": "H",
+   "elo": 1829.7,
+   "elo_seed": 1892,
+   "attack": 1.0122,
+   "defense": 1.0575,
+   "p_title": 0.0,
+   "p_final": 0.0,
+   "p_sf": 0.0,
+   "p_qf": 0.0,
+   "p_r16": 0.0,
+   "p_r32": 0.0,
+   "p_group_win": 0.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 0.0
+  },
+  {
+   "id": "IRQ",
+   "name": "Iraq",
+   "group": "I",
+   "elo": 1548.7,
+   "elo_seed": 1607,
+   "attack": 0.5566,
+   "defense": 1.7982,
+   "p_title": 0.0,
+   "p_final": 0.0,
+   "p_sf": 0.0,
+   "p_qf": 0.0,
+   "p_r16": 0.0,
+   "p_r32": 0.0,
+   "p_group_win": 0.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 0.0
+  },
+  {
+   "id": "JOR",
+   "name": "Jordan",
+   "group": "J",
+   "elo": 1615.5,
+   "elo_seed": 1680,
+   "attack": 0.8203,
+   "defense": 1.4758,
+   "p_title": 0.0,
+   "p_final": 0.0,
+   "p_sf": 0.0,
+   "p_qf": 0.0,
+   "p_r16": 0.0,
+   "p_r32": 0.0,
+   "p_group_win": 0.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 0.0
+  },
+  {
+   "id": "UZB",
+   "name": "Uzbekistan",
+   "group": "K",
+   "elo": 1611.7,
+   "elo_seed": 1714,
+   "attack": 0.7832,
+   "defense": 1.8762,
+   "p_title": 0.0,
+   "p_final": 0.0,
+   "p_sf": 0.0,
+   "p_qf": 0.0,
+   "p_r16": 0.0,
+   "p_r32": 0.0,
+   "p_group_win": 0.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 0.0
+  },
+  {
+   "id": "PAN",
+   "name": "Panama",
+   "group": "L",
+   "elo": 1642.0,
+   "elo_seed": 1730,
+   "attack": 0.5076,
+   "defense": 1.1549,
+   "p_title": 0.0,
+   "p_final": 0.0,
+   "p_sf": 0.0,
+   "p_qf": 0.0,
+   "p_r16": 0.0,
+   "p_r32": 0.0,
+   "p_group_win": 0.0,
+   "p_group_second": 0.0,
+   "p_third_advance": 0.0,
+   "p_advance": 0.0
+  }
+ ],
+ "groups": {
+  "A": [
+   {
+    "team": "MEX",
+    "played": 3,
+    "won": 3,
+    "drawn": 0,
+    "lost": 0,
+    "gf": 6,
+    "ga": 0,
+    "gd": 6,
+    "pts": 9
+   },
+   {
+    "team": "RSA",
+    "played": 3,
+    "won": 1,
+    "drawn": 1,
+    "lost": 1,
+    "gf": 2,
+    "ga": 3,
+    "gd": -1,
+    "pts": 4
+   },
+   {
+    "team": "KOR",
+    "played": 3,
+    "won": 1,
+    "drawn": 0,
+    "lost": 2,
+    "gf": 2,
+    "ga": 3,
+    "gd": -1,
+    "pts": 3
+   },
+   {
+    "team": "CZE",
+    "played": 3,
+    "won": 0,
+    "drawn": 1,
+    "lost": 2,
+    "gf": 2,
+    "ga": 6,
+    "gd": -4,
+    "pts": 1
+   }
+  ],
+  "B": [
+   {
+    "team": "SUI",
+    "played": 3,
+    "won": 2,
+    "drawn": 1,
+    "lost": 0,
+    "gf": 7,
+    "ga": 3,
+    "gd": 4,
+    "pts": 7
+   },
+   {
+    "team": "CAN",
+    "played": 3,
+    "won": 1,
+    "drawn": 1,
+    "lost": 1,
+    "gf": 8,
+    "ga": 3,
+    "gd": 5,
+    "pts": 4
+   },
+   {
+    "team": "BIH",
+    "played": 3,
+    "won": 1,
+    "drawn": 1,
+    "lost": 1,
+    "gf": 5,
+    "ga": 6,
+    "gd": -1,
+    "pts": 4
+   },
+   {
+    "team": "QAT",
+    "played": 3,
+    "won": 0,
+    "drawn": 1,
+    "lost": 2,
+    "gf": 2,
+    "ga": 10,
+    "gd": -8,
+    "pts": 1
+   }
+  ],
+  "C": [
+   {
+    "team": "BRA",
+    "played": 3,
+    "won": 2,
+    "drawn": 1,
+    "lost": 0,
+    "gf": 7,
+    "ga": 1,
+    "gd": 6,
+    "pts": 7
+   },
+   {
+    "team": "MAR",
+    "played": 3,
+    "won": 2,
+    "drawn": 1,
+    "lost": 0,
+    "gf": 6,
+    "ga": 3,
+    "gd": 3,
+    "pts": 7
+   },
+   {
+    "team": "SCO",
+    "played": 3,
+    "won": 1,
+    "drawn": 0,
+    "lost": 2,
+    "gf": 1,
+    "ga": 4,
+    "gd": -3,
+    "pts": 3
+   },
+   {
+    "team": "HAI",
+    "played": 3,
+    "won": 0,
+    "drawn": 0,
+    "lost": 3,
+    "gf": 2,
+    "ga": 8,
+    "gd": -6,
+    "pts": 0
+   }
+  ],
+  "D": [
+   {
+    "team": "USA",
+    "played": 3,
+    "won": 2,
+    "drawn": 0,
+    "lost": 1,
+    "gf": 8,
+    "ga": 4,
+    "gd": 4,
+    "pts": 6
+   },
+   {
+    "team": "AUS",
+    "played": 3,
+    "won": 1,
+    "drawn": 1,
+    "lost": 1,
+    "gf": 2,
+    "ga": 2,
+    "gd": 0,
+    "pts": 4
+   },
+   {
+    "team": "PAR",
+    "played": 3,
+    "won": 1,
+    "drawn": 1,
+    "lost": 1,
+    "gf": 2,
+    "ga": 4,
+    "gd": -2,
+    "pts": 4
+   },
+   {
+    "team": "TUR",
+    "played": 3,
+    "won": 1,
+    "drawn": 0,
+    "lost": 2,
+    "gf": 3,
+    "ga": 5,
+    "gd": -2,
+    "pts": 3
+   }
+  ],
+  "E": [
+   {
+    "team": "GER",
+    "played": 3,
+    "won": 2,
+    "drawn": 0,
+    "lost": 1,
+    "gf": 10,
+    "ga": 4,
+    "gd": 6,
+    "pts": 6
+   },
+   {
+    "team": "CIV",
+    "played": 3,
+    "won": 2,
+    "drawn": 0,
+    "lost": 1,
+    "gf": 4,
+    "ga": 2,
+    "gd": 2,
+    "pts": 6
+   },
+   {
+    "team": "ECU",
+    "played": 3,
+    "won": 1,
+    "drawn": 1,
+    "lost": 1,
+    "gf": 2,
+    "ga": 2,
+    "gd": 0,
+    "pts": 4
+   },
+   {
+    "team": "CUW",
+    "played": 3,
+    "won": 0,
+    "drawn": 1,
+    "lost": 2,
+    "gf": 1,
+    "ga": 9,
+    "gd": -8,
+    "pts": 1
+   }
+  ],
+  "F": [
+   {
+    "team": "NED",
+    "played": 3,
+    "won": 2,
+    "drawn": 1,
+    "lost": 0,
+    "gf": 10,
+    "ga": 4,
+    "gd": 6,
+    "pts": 7
+   },
+   {
+    "team": "JPN",
+    "played": 3,
+    "won": 1,
+    "drawn": 2,
+    "lost": 0,
+    "gf": 7,
+    "ga": 3,
+    "gd": 4,
+    "pts": 5
+   },
+   {
+    "team": "SWE",
+    "played": 3,
+    "won": 1,
+    "drawn": 1,
+    "lost": 1,
+    "gf": 7,
+    "ga": 7,
+    "gd": 0,
+    "pts": 4
+   },
+   {
+    "team": "TUN",
+    "played": 3,
+    "won": 0,
+    "drawn": 0,
+    "lost": 3,
+    "gf": 2,
+    "ga": 12,
+    "gd": -10,
+    "pts": 0
+   }
+  ],
+  "G": [
+   {
+    "team": "BEL",
+    "played": 3,
+    "won": 1,
+    "drawn": 2,
+    "lost": 0,
+    "gf": 6,
+    "ga": 2,
+    "gd": 4,
+    "pts": 5
+   },
+   {
+    "team": "EGY",
+    "played": 3,
+    "won": 1,
+    "drawn": 2,
+    "lost": 0,
+    "gf": 5,
+    "ga": 3,
+    "gd": 2,
+    "pts": 5
+   },
+   {
+    "team": "IRN",
+    "played": 3,
+    "won": 0,
+    "drawn": 3,
+    "lost": 0,
+    "gf": 3,
+    "ga": 3,
+    "gd": 0,
+    "pts": 3
+   },
+   {
+    "team": "NZL",
+    "played": 3,
+    "won": 0,
+    "drawn": 1,
+    "lost": 2,
+    "gf": 4,
+    "ga": 10,
+    "gd": -6,
+    "pts": 1
+   }
+  ],
+  "H": [
+   {
+    "team": "ESP",
+    "played": 3,
+    "won": 2,
+    "drawn": 1,
+    "lost": 0,
+    "gf": 5,
+    "ga": 0,
+    "gd": 5,
+    "pts": 7
+   },
+   {
+    "team": "CPV",
+    "played": 3,
+    "won": 0,
+    "drawn": 3,
+    "lost": 0,
+    "gf": 2,
+    "ga": 2,
+    "gd": 0,
+    "pts": 3
+   },
+   {
+    "team": "URU",
+    "played": 3,
+    "won": 0,
+    "drawn": 2,
+    "lost": 1,
+    "gf": 3,
+    "ga": 4,
+    "gd": -1,
+    "pts": 2
+   },
+   {
+    "team": "KSA",
+    "played": 3,
+    "won": 0,
+    "drawn": 2,
+    "lost": 1,
+    "gf": 1,
+    "ga": 5,
+    "gd": -4,
+    "pts": 2
+   }
+  ],
+  "I": [
+   {
+    "team": "FRA",
+    "played": 3,
+    "won": 3,
+    "drawn": 0,
+    "lost": 0,
+    "gf": 10,
+    "ga": 2,
+    "gd": 8,
+    "pts": 9
+   },
+   {
+    "team": "NOR",
+    "played": 3,
+    "won": 2,
+    "drawn": 0,
+    "lost": 1,
+    "gf": 8,
+    "ga": 7,
+    "gd": 1,
+    "pts": 6
+   },
+   {
+    "team": "SEN",
+    "played": 3,
+    "won": 1,
+    "drawn": 0,
+    "lost": 2,
+    "gf": 8,
+    "ga": 6,
+    "gd": 2,
+    "pts": 3
+   },
+   {
+    "team": "IRQ",
+    "played": 3,
+    "won": 0,
+    "drawn": 0,
+    "lost": 3,
+    "gf": 1,
+    "ga": 12,
+    "gd": -11,
+    "pts": 0
+   }
+  ],
+  "J": [
+   {
+    "team": "ARG",
+    "played": 3,
+    "won": 3,
+    "drawn": 0,
+    "lost": 0,
+    "gf": 8,
+    "ga": 1,
+    "gd": 7,
+    "pts": 9
+   },
+   {
+    "team": "AUT",
+    "played": 3,
+    "won": 1,
+    "drawn": 1,
+    "lost": 1,
+    "gf": 6,
+    "ga": 6,
+    "gd": 0,
+    "pts": 4
+   },
+   {
+    "team": "ALG",
+    "played": 3,
+    "won": 1,
+    "drawn": 1,
+    "lost": 1,
+    "gf": 5,
+    "ga": 7,
+    "gd": -2,
+    "pts": 4
+   },
+   {
+    "team": "JOR",
+    "played": 3,
+    "won": 0,
+    "drawn": 0,
+    "lost": 3,
+    "gf": 3,
+    "ga": 8,
+    "gd": -5,
+    "pts": 0
+   }
+  ],
+  "K": [
+   {
+    "team": "COL",
+    "played": 3,
+    "won": 2,
+    "drawn": 1,
+    "lost": 0,
+    "gf": 4,
+    "ga": 1,
+    "gd": 3,
+    "pts": 7
+   },
+   {
+    "team": "POR",
+    "played": 3,
+    "won": 1,
+    "drawn": 2,
+    "lost": 0,
+    "gf": 6,
+    "ga": 1,
+    "gd": 5,
+    "pts": 5
+   },
+   {
+    "team": "COD",
+    "played": 3,
+    "won": 1,
+    "drawn": 1,
+    "lost": 1,
+    "gf": 4,
+    "ga": 3,
+    "gd": 1,
+    "pts": 4
+   },
+   {
+    "team": "UZB",
+    "played": 3,
+    "won": 0,
+    "drawn": 0,
+    "lost": 3,
+    "gf": 2,
+    "ga": 11,
+    "gd": -9,
+    "pts": 0
+   }
+  ],
+  "L": [
+   {
+    "team": "ENG",
+    "played": 3,
+    "won": 2,
+    "drawn": 1,
+    "lost": 0,
+    "gf": 6,
+    "ga": 2,
+    "gd": 4,
+    "pts": 7
+   },
+   {
+    "team": "CRO",
+    "played": 3,
+    "won": 2,
+    "drawn": 0,
+    "lost": 1,
+    "gf": 5,
+    "ga": 5,
+    "gd": 0,
+    "pts": 6
+   },
+   {
+    "team": "GHA",
+    "played": 3,
+    "won": 1,
+    "drawn": 1,
+    "lost": 1,
+    "gf": 2,
+    "ga": 2,
+    "gd": 0,
+    "pts": 4
+   },
+   {
+    "team": "PAN",
+    "played": 3,
+    "won": 0,
+    "drawn": 0,
+    "lost": 3,
+    "gf": 0,
+    "ga": 4,
+    "gd": -4,
+    "pts": 0
+   }
+  ]
+ },
+ "matches": [
+  {
+   "id": "A1",
+   "group": "A",
+   "home": "MEX",
+   "away": "RSA",
+   "date": "2026-06-11",
+   "time_utc": "2026-06-11T19:00:00+00:00",
+   "venue": "azteca",
+   "played": true,
+   "hg": 2,
+   "ag": 0
+  },
+  {
+   "id": "A2",
+   "group": "A",
+   "home": "KOR",
+   "away": "CZE",
+   "date": "2026-06-11",
+   "time_utc": "2026-06-12T02:00:00+00:00",
+   "venue": "akron",
+   "played": true,
+   "hg": 2,
+   "ag": 1
+  },
+  {
+   "id": "B1",
+   "group": "B",
+   "home": "CAN",
+   "away": "BIH",
+   "date": "2026-06-12",
+   "time_utc": "2026-06-12T19:00:00+00:00",
+   "venue": "bmo",
+   "played": true,
+   "hg": 1,
+   "ag": 1
+  },
+  {
+   "id": "D1",
+   "group": "D",
+   "home": "USA",
+   "away": "PAR",
+   "date": "2026-06-12",
+   "time_utc": "2026-06-13T01:00:00+00:00",
+   "venue": "sofi",
+   "played": true,
+   "hg": 4,
+   "ag": 1
+  },
+  {
+   "id": "B2",
+   "group": "B",
+   "home": "QAT",
+   "away": "SUI",
+   "date": "2026-06-13",
+   "time_utc": "2026-06-13T19:00:00+00:00",
+   "venue": "levis",
+   "played": true,
+   "hg": 1,
+   "ag": 1
+  },
+  {
+   "id": "C1",
+   "group": "C",
+   "home": "BRA",
+   "away": "MAR",
+   "date": "2026-06-13",
+   "time_utc": "2026-06-13T22:00:00+00:00",
+   "venue": "metlife",
+   "played": true,
+   "hg": 1,
+   "ag": 1
+  },
+  {
+   "id": "C2",
+   "group": "C",
+   "home": "HAI",
+   "away": "SCO",
+   "date": "2026-06-13",
+   "time_utc": "2026-06-14T01:00:00+00:00",
+   "venue": "gillette",
+   "played": true,
+   "hg": 0,
+   "ag": 1
+  },
+  {
+   "id": "D2",
+   "group": "D",
+   "home": "AUS",
+   "away": "TUR",
+   "date": "2026-06-13",
+   "time_utc": "2026-06-14T04:00:00+00:00",
+   "venue": "bcplace",
+   "played": true,
+   "hg": 2,
+   "ag": 0
+  },
+  {
+   "id": "E1",
+   "group": "E",
+   "home": "GER",
+   "away": "CUW",
+   "date": "2026-06-14",
+   "time_utc": "2026-06-14T17:00:00+00:00",
+   "venue": "nrg",
+   "played": true,
+   "hg": 7,
+   "ag": 1
+  },
+  {
+   "id": "E2",
+   "group": "E",
+   "home": "CIV",
+   "away": "ECU",
+   "date": "2026-06-14",
+   "time_utc": "2026-06-14T23:00:00+00:00",
+   "venue": "lincoln",
+   "played": true,
+   "hg": 1,
+   "ag": 0
+  },
+  {
+   "id": "F1",
+   "group": "F",
+   "home": "NED",
+   "away": "JPN",
+   "date": "2026-06-14",
+   "time_utc": "2026-06-14T20:00:00+00:00",
+   "venue": "att",
+   "played": true,
+   "hg": 2,
+   "ag": 2
+  },
+  {
+   "id": "F2",
+   "group": "F",
+   "home": "SWE",
+   "away": "TUN",
+   "date": "2026-06-14",
+   "time_utc": "2026-06-15T02:00:00+00:00",
+   "venue": "bbva",
+   "played": true,
+   "hg": 5,
+   "ag": 1
+  },
+  {
+   "id": "G1",
+   "group": "G",
+   "home": "BEL",
+   "away": "EGY",
+   "date": "2026-06-15",
+   "time_utc": "2026-06-15T19:00:00+00:00",
+   "venue": "lumen",
+   "played": true,
+   "hg": 1,
+   "ag": 1
+  },
+  {
+   "id": "G2",
+   "group": "G",
+   "home": "IRN",
+   "away": "NZL",
+   "date": "2026-06-15",
+   "time_utc": "2026-06-16T01:00:00+00:00",
+   "venue": "sofi",
+   "played": true,
+   "hg": 2,
+   "ag": 2
+  },
+  {
+   "id": "H1",
+   "group": "H",
+   "home": "ESP",
+   "away": "CPV",
+   "date": "2026-06-15",
+   "time_utc": "2026-06-15T16:00:00+00:00",
+   "venue": "mercedesbenz",
+   "played": true,
+   "hg": 0,
+   "ag": 0
+  },
+  {
+   "id": "H2",
+   "group": "H",
+   "home": "KSA",
+   "away": "URU",
+   "date": "2026-06-15",
+   "time_utc": "2026-06-15T22:00:00+00:00",
+   "venue": "hardrock",
+   "played": true,
+   "hg": 1,
+   "ag": 1
+  },
+  {
+   "id": "I1",
+   "group": "I",
+   "home": "FRA",
+   "away": "SEN",
+   "date": "2026-06-16",
+   "time_utc": "2026-06-16T19:00:00+00:00",
+   "venue": "metlife",
+   "played": true,
+   "hg": 3,
+   "ag": 1
+  },
+  {
+   "id": "I2",
+   "group": "I",
+   "home": "IRQ",
+   "away": "NOR",
+   "date": "2026-06-16",
+   "time_utc": "2026-06-16T22:00:00+00:00",
+   "venue": "gillette",
+   "played": true,
+   "hg": 1,
+   "ag": 4
+  },
+  {
+   "id": "J1",
+   "group": "J",
+   "home": "ARG",
+   "away": "ALG",
+   "date": "2026-06-16",
+   "time_utc": "2026-06-17T01:00:00+00:00",
+   "venue": "arrowhead",
+   "played": true,
+   "hg": 3,
+   "ag": 0
+  },
+  {
+   "id": "J2",
+   "group": "J",
+   "home": "AUT",
+   "away": "JOR",
+   "date": "2026-06-16",
+   "time_utc": "2026-06-17T04:00:00+00:00",
+   "venue": "levis",
+   "played": true,
+   "hg": 3,
+   "ag": 1
+  },
+  {
+   "id": "K1",
+   "group": "K",
+   "home": "POR",
+   "away": "COD",
+   "date": "2026-06-17",
+   "time_utc": "2026-06-17T17:00:00+00:00",
+   "venue": "nrg",
+   "played": true,
+   "hg": 1,
+   "ag": 1
+  },
+  {
+   "id": "K2",
+   "group": "K",
+   "home": "UZB",
+   "away": "COL",
+   "date": "2026-06-17",
+   "time_utc": "2026-06-18T02:00:00+00:00",
+   "venue": "azteca",
+   "played": true,
+   "hg": 1,
+   "ag": 3
+  },
+  {
+   "id": "L1",
+   "group": "L",
+   "home": "ENG",
+   "away": "CRO",
+   "date": "2026-06-17",
+   "time_utc": "2026-06-17T20:00:00+00:00",
+   "venue": "att",
+   "played": true,
+   "hg": 4,
+   "ag": 2
+  },
+  {
+   "id": "L2",
+   "group": "L",
+   "home": "GHA",
+   "away": "PAN",
+   "date": "2026-06-17",
+   "time_utc": "2026-06-17T23:00:00+00:00",
+   "venue": "bmo",
+   "played": true,
+   "hg": 1,
+   "ag": 0
+  },
+  {
+   "id": "A3",
+   "group": "A",
+   "home": "CZE",
+   "away": "RSA",
+   "date": "2026-06-18",
+   "time_utc": "2026-06-18T16:00:00+00:00",
+   "venue": "mercedesbenz",
+   "played": true,
+   "hg": 1,
+   "ag": 1
+  },
+  {
+   "id": "A4",
+   "group": "A",
+   "home": "MEX",
+   "away": "KOR",
+   "date": "2026-06-18",
+   "time_utc": "2026-06-19T01:00:00+00:00",
+   "venue": "akron",
+   "played": true,
+   "hg": 1,
+   "ag": 0
+  },
+  {
+   "id": "B3",
+   "group": "B",
+   "home": "SUI",
+   "away": "BIH",
+   "date": "2026-06-18",
+   "time_utc": "2026-06-18T19:00:00+00:00",
+   "venue": "sofi",
+   "played": true,
+   "hg": 4,
+   "ag": 1
+  },
+  {
+   "id": "B4",
+   "group": "B",
+   "home": "CAN",
+   "away": "QAT",
+   "date": "2026-06-18",
+   "time_utc": "2026-06-18T22:00:00+00:00",
+   "venue": "bcplace",
+   "played": true,
+   "hg": 6,
+   "ag": 0
+  },
+  {
+   "id": "C3",
+   "group": "C",
+   "home": "SCO",
+   "away": "MAR",
+   "date": "2026-06-19",
+   "time_utc": "2026-06-19T22:00:00+00:00",
+   "venue": "gillette",
+   "played": true,
+   "hg": 0,
+   "ag": 1
+  },
+  {
+   "id": "C4",
+   "group": "C",
+   "home": "BRA",
+   "away": "HAI",
+   "date": "2026-06-19",
+   "time_utc": "2026-06-20T00:30:00+00:00",
+   "venue": "lincoln",
+   "played": true,
+   "hg": 3,
+   "ag": 0
+  },
+  {
+   "id": "D3",
+   "group": "D",
+   "home": "USA",
+   "away": "AUS",
+   "date": "2026-06-19",
+   "time_utc": "2026-06-19T19:00:00+00:00",
+   "venue": "lumen",
+   "played": true,
+   "hg": 2,
+   "ag": 0
+  },
+  {
+   "id": "D4",
+   "group": "D",
+   "home": "TUR",
+   "away": "PAR",
+   "date": "2026-06-19",
+   "time_utc": "2026-06-20T03:00:00+00:00",
+   "venue": "levis",
+   "played": true,
+   "hg": 0,
+   "ag": 1
+  },
+  {
+   "id": "E3",
+   "group": "E",
+   "home": "GER",
+   "away": "CIV",
+   "date": "2026-06-20",
+   "time_utc": "2026-06-20T20:00:00+00:00",
+   "venue": "bmo",
+   "played": true,
+   "hg": 2,
+   "ag": 1
+  },
+  {
+   "id": "E4",
+   "group": "E",
+   "home": "ECU",
+   "away": "CUW",
+   "date": "2026-06-20",
+   "time_utc": "2026-06-21T00:00:00+00:00",
+   "venue": "arrowhead",
+   "played": true,
+   "hg": 0,
+   "ag": 0
+  },
+  {
+   "id": "F3",
+   "group": "F",
+   "home": "NED",
+   "away": "SWE",
+   "date": "2026-06-20",
+   "time_utc": "2026-06-20T17:00:00+00:00",
+   "venue": "nrg",
+   "played": true,
+   "hg": 5,
+   "ag": 1
+  },
+  {
+   "id": "F4",
+   "group": "F",
+   "home": "TUN",
+   "away": "JPN",
+   "date": "2026-06-20",
+   "time_utc": "2026-06-21T04:00:00+00:00",
+   "venue": "bbva",
+   "played": true,
+   "hg": 0,
+   "ag": 4
+  },
+  {
+   "id": "G3",
+   "group": "G",
+   "home": "BEL",
+   "away": "IRN",
+   "date": "2026-06-21",
+   "time_utc": "2026-06-21T19:00:00+00:00",
+   "venue": "sofi",
+   "played": true,
+   "hg": 0,
+   "ag": 0
+  },
+  {
+   "id": "G4",
+   "group": "G",
+   "home": "NZL",
+   "away": "EGY",
+   "date": "2026-06-21",
+   "time_utc": "2026-06-22T01:00:00+00:00",
+   "venue": "bcplace",
+   "played": true,
+   "hg": 1,
+   "ag": 3
+  },
+  {
+   "id": "H3",
+   "group": "H",
+   "home": "ESP",
+   "away": "KSA",
+   "date": "2026-06-21",
+   "time_utc": "2026-06-21T16:00:00+00:00",
+   "venue": "mercedesbenz",
+   "played": true,
+   "hg": 4,
+   "ag": 0
+  },
+  {
+   "id": "H4",
+   "group": "H",
+   "home": "URU",
+   "away": "CPV",
+   "date": "2026-06-21",
+   "time_utc": "2026-06-21T22:00:00+00:00",
+   "venue": "hardrock",
+   "played": true,
+   "hg": 2,
+   "ag": 2
+  },
+  {
+   "id": "I3",
+   "group": "I",
+   "home": "FRA",
+   "away": "IRQ",
+   "date": "2026-06-22",
+   "time_utc": "2026-06-22T21:00:00+00:00",
+   "venue": "lincoln",
+   "played": true,
+   "hg": 3,
+   "ag": 0
+  },
+  {
+   "id": "I4",
+   "group": "I",
+   "home": "NOR",
+   "away": "SEN",
+   "date": "2026-06-22",
+   "time_utc": "2026-06-23T00:00:00+00:00",
+   "venue": "metlife",
+   "played": true,
+   "hg": 3,
+   "ag": 2
+  },
+  {
+   "id": "J3",
+   "group": "J",
+   "home": "ARG",
+   "away": "AUT",
+   "date": "2026-06-22",
+   "time_utc": "2026-06-22T17:00:00+00:00",
+   "venue": "att",
+   "played": true,
+   "hg": 2,
+   "ag": 0
+  },
+  {
+   "id": "J4",
+   "group": "J",
+   "home": "JOR",
+   "away": "ALG",
+   "date": "2026-06-22",
+   "time_utc": "2026-06-23T03:00:00+00:00",
+   "venue": "levis",
+   "played": true,
+   "hg": 1,
+   "ag": 2
+  },
+  {
+   "id": "K3",
+   "group": "K",
+   "home": "POR",
+   "away": "UZB",
+   "date": "2026-06-23",
+   "time_utc": "2026-06-23T17:00:00+00:00",
+   "venue": "nrg",
+   "played": true,
+   "hg": 5,
+   "ag": 0
+  },
+  {
+   "id": "K4",
+   "group": "K",
+   "home": "COL",
+   "away": "COD",
+   "date": "2026-06-23",
+   "time_utc": "2026-06-24T02:00:00+00:00",
+   "venue": "akron",
+   "played": true,
+   "hg": 1,
+   "ag": 0
+  },
+  {
+   "id": "L3",
+   "group": "L",
+   "home": "ENG",
+   "away": "GHA",
+   "date": "2026-06-23",
+   "time_utc": "2026-06-23T20:00:00+00:00",
+   "venue": "gillette",
+   "played": true,
+   "hg": 0,
+   "ag": 0
+  },
+  {
+   "id": "L4",
+   "group": "L",
+   "home": "PAN",
+   "away": "CRO",
+   "date": "2026-06-23",
+   "time_utc": "2026-06-23T23:00:00+00:00",
+   "venue": "bmo",
+   "played": true,
+   "hg": 0,
+   "ag": 1
+  },
+  {
+   "id": "A5",
+   "group": "A",
+   "home": "CZE",
+   "away": "MEX",
+   "date": "2026-06-24",
+   "time_utc": "2026-06-25T01:00:00+00:00",
+   "venue": "azteca",
+   "played": true,
+   "hg": 0,
+   "ag": 3
+  },
+  {
+   "id": "A6",
+   "group": "A",
+   "home": "RSA",
+   "away": "KOR",
+   "date": "2026-06-24",
+   "time_utc": "2026-06-25T01:00:00+00:00",
+   "venue": "bbva",
+   "played": true,
+   "hg": 1,
+   "ag": 0
+  },
+  {
+   "id": "B5",
+   "group": "B",
+   "home": "SUI",
+   "away": "CAN",
+   "date": "2026-06-24",
+   "time_utc": "2026-06-24T19:00:00+00:00",
+   "venue": "bcplace",
+   "played": true,
+   "hg": 2,
+   "ag": 1
+  },
+  {
+   "id": "B6",
+   "group": "B",
+   "home": "BIH",
+   "away": "QAT",
+   "date": "2026-06-24",
+   "time_utc": "2026-06-24T19:00:00+00:00",
+   "venue": "lumen",
+   "played": true,
+   "hg": 3,
+   "ag": 1
+  },
+  {
+   "id": "C5",
+   "group": "C",
+   "home": "SCO",
+   "away": "BRA",
+   "date": "2026-06-24",
+   "time_utc": "2026-06-24T22:00:00+00:00",
+   "venue": "hardrock",
+   "played": true,
+   "hg": 0,
+   "ag": 3
+  },
+  {
+   "id": "C6",
+   "group": "C",
+   "home": "MAR",
+   "away": "HAI",
+   "date": "2026-06-24",
+   "time_utc": "2026-06-24T22:00:00+00:00",
+   "venue": "mercedesbenz",
+   "played": true,
+   "hg": 4,
+   "ag": 2
+  },
+  {
+   "id": "D5",
+   "group": "D",
+   "home": "TUR",
+   "away": "USA",
+   "date": "2026-06-25",
+   "time_utc": "2026-06-26T02:00:00+00:00",
+   "venue": "sofi",
+   "played": true,
+   "hg": 3,
+   "ag": 2
+  },
+  {
+   "id": "D6",
+   "group": "D",
+   "home": "PAR",
+   "away": "AUS",
+   "date": "2026-06-25",
+   "time_utc": "2026-06-26T02:00:00+00:00",
+   "venue": "levis",
+   "played": true,
+   "hg": 0,
+   "ag": 0
+  },
+  {
+   "id": "E5",
+   "group": "E",
+   "home": "CUW",
+   "away": "CIV",
+   "date": "2026-06-25",
+   "time_utc": "2026-06-25T20:00:00+00:00",
+   "venue": "lincoln",
+   "played": true,
+   "hg": 0,
+   "ag": 2
+  },
+  {
+   "id": "E6",
+   "group": "E",
+   "home": "ECU",
+   "away": "GER",
+   "date": "2026-06-25",
+   "time_utc": "2026-06-25T20:00:00+00:00",
+   "venue": "metlife",
+   "played": true,
+   "hg": 2,
+   "ag": 1
+  },
+  {
+   "id": "F5",
+   "group": "F",
+   "home": "JPN",
+   "away": "SWE",
+   "date": "2026-06-25",
+   "time_utc": "2026-06-25T23:00:00+00:00",
+   "venue": "att",
+   "played": true,
+   "hg": 1,
+   "ag": 1
+  },
+  {
+   "id": "F6",
+   "group": "F",
+   "home": "TUN",
+   "away": "NED",
+   "date": "2026-06-25",
+   "time_utc": "2026-06-25T23:00:00+00:00",
+   "venue": "arrowhead",
+   "played": true,
+   "hg": 1,
+   "ag": 3
+  },
+  {
+   "id": "G5",
+   "group": "G",
+   "home": "EGY",
+   "away": "IRN",
+   "date": "2026-06-26",
+   "time_utc": "2026-06-27T03:00:00+00:00",
+   "venue": "lumen",
+   "played": true,
+   "hg": 1,
+   "ag": 1
+  },
+  {
+   "id": "G6",
+   "group": "G",
+   "home": "NZL",
+   "away": "BEL",
+   "date": "2026-06-26",
+   "time_utc": "2026-06-27T03:00:00+00:00",
+   "venue": "bcplace",
+   "played": true,
+   "hg": 1,
+   "ag": 5
+  },
+  {
+   "id": "H5",
+   "group": "H",
+   "home": "CPV",
+   "away": "KSA",
+   "date": "2026-06-26",
+   "time_utc": "2026-06-27T00:00:00+00:00",
+   "venue": "nrg",
+   "played": true,
+   "hg": 0,
+   "ag": 0
+  },
+  {
+   "id": "H6",
+   "group": "H",
+   "home": "URU",
+   "away": "ESP",
+   "date": "2026-06-26",
+   "time_utc": "2026-06-27T00:00:00+00:00",
+   "venue": "akron",
+   "played": true,
+   "hg": 0,
+   "ag": 1
+  },
+  {
+   "id": "I5",
+   "group": "I",
+   "home": "NOR",
+   "away": "FRA",
+   "date": "2026-06-26",
+   "time_utc": "2026-06-26T19:00:00+00:00",
+   "venue": "gillette",
+   "played": true,
+   "hg": 1,
+   "ag": 4
+  },
+  {
+   "id": "I6",
+   "group": "I",
+   "home": "SEN",
+   "away": "IRQ",
+   "date": "2026-06-26",
+   "time_utc": "2026-06-26T19:00:00+00:00",
+   "venue": "bmo",
+   "played": true,
+   "hg": 5,
+   "ag": 0
+  },
+  {
+   "id": "J5",
+   "group": "J",
+   "home": "ALG",
+   "away": "AUT",
+   "date": "2026-06-27",
+   "time_utc": "2026-06-28T02:00:00+00:00",
+   "venue": "arrowhead",
+   "played": true,
+   "hg": 3,
+   "ag": 3
+  },
+  {
+   "id": "J6",
+   "group": "J",
+   "home": "JOR",
+   "away": "ARG",
+   "date": "2026-06-27",
+   "time_utc": "2026-06-28T02:00:00+00:00",
+   "venue": "att",
+   "played": true,
+   "hg": 1,
+   "ag": 3
+  },
+  {
+   "id": "K5",
+   "group": "K",
+   "home": "COL",
+   "away": "POR",
+   "date": "2026-06-27",
+   "time_utc": "2026-06-27T23:30:00+00:00",
+   "venue": "hardrock",
+   "played": true,
+   "hg": 0,
+   "ag": 0
+  },
+  {
+   "id": "K6",
+   "group": "K",
+   "home": "COD",
+   "away": "UZB",
+   "date": "2026-06-27",
+   "time_utc": "2026-06-27T23:30:00+00:00",
+   "venue": "mercedesbenz",
+   "played": true,
+   "hg": 3,
+   "ag": 1
+  },
+  {
+   "id": "L5",
+   "group": "L",
+   "home": "PAN",
+   "away": "ENG",
+   "date": "2026-06-27",
+   "time_utc": "2026-06-27T21:00:00+00:00",
+   "venue": "metlife",
+   "played": true,
+   "hg": 0,
+   "ag": 2
+  },
+  {
+   "id": "L6",
+   "group": "L",
+   "home": "CRO",
+   "away": "GHA",
+   "date": "2026-06-27",
+   "time_utc": "2026-06-27T21:00:00+00:00",
+   "venue": "lincoln",
+   "played": true,
+   "hg": 2,
+   "ag": 1
+  }
+ ],
+ "bracket": {
+  "r32": [
+   {
+    "match": 73,
+    "date": "2026-06-28",
+    "venue": "sofi",
+    "home_slot": {
+     "type": "R",
+     "group": "A"
+    },
+    "away_slot": {
+     "type": "R",
+     "group": "B"
+    },
+    "home_dist": [
+     {
+      "team": "RSA",
+      "p": 1.0
+     }
+    ],
+    "away_dist": [
+     {
+      "team": "CAN",
+      "p": 1.0
+     }
+    ],
+    "winner_dist": [
+     {
+      "team": "CAN",
+      "p": 0.623
+     },
+     {
+      "team": "RSA",
+      "p": 0.377
+     }
+    ]
+   },
+   {
+    "match": 74,
+    "date": "2026-06-29",
+    "venue": "gillette",
+    "home_slot": {
+     "type": "W",
+     "group": "E"
+    },
+    "away_slot": {
+     "type": "T",
+     "allowed": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "F"
+     ]
+    },
+    "home_dist": [
+     {
+      "team": "GER",
+      "p": 1.0
+     }
+    ],
+    "away_dist": [
+     {
+      "team": "PAR",
+      "p": 1.0
+     }
+    ],
+    "winner_dist": [
+     {
+      "team": "GER",
+      "p": 0.5805
+     },
+     {
+      "team": "PAR",
+      "p": 0.4195
+     }
+    ]
+   },
+   {
+    "match": 75,
+    "date": "2026-06-29",
+    "venue": "bbva",
+    "home_slot": {
+     "type": "W",
+     "group": "F"
+    },
+    "away_slot": {
+     "type": "R",
+     "group": "C"
+    },
+    "home_dist": [
+     {
+      "team": "NED",
+      "p": 1.0
+     }
+    ],
+    "away_dist": [
+     {
+      "team": "MAR",
+      "p": 1.0
+     }
+    ],
+    "winner_dist": [
+     {
+      "team": "NED",
+      "p": 0.5829
+     },
+     {
+      "team": "MAR",
+      "p": 0.4171
+     }
+    ]
+   },
+   {
+    "match": 76,
+    "date": "2026-06-29",
+    "venue": "nrg",
+    "home_slot": {
+     "type": "W",
+     "group": "C"
+    },
+    "away_slot": {
+     "type": "R",
+     "group": "F"
+    },
+    "home_dist": [
+     {
+      "team": "BRA",
+      "p": 1.0
+     }
+    ],
+    "away_dist": [
+     {
+      "team": "JPN",
+      "p": 1.0
+     }
+    ],
+    "winner_dist": [
+     {
+      "team": "BRA",
+      "p": 0.5788
+     },
+     {
+      "team": "JPN",
+      "p": 0.4212
+     }
+    ]
+   },
+   {
+    "match": 77,
+    "date": "2026-06-30",
+    "venue": "metlife",
+    "home_slot": {
+     "type": "W",
+     "group": "I"
+    },
+    "away_slot": {
+     "type": "T",
+     "allowed": [
+      "C",
+      "D",
+      "F",
+      "G",
+      "H"
+     ]
+    },
+    "home_dist": [
+     {
+      "team": "FRA",
+      "p": 1.0
+     }
+    ],
+    "away_dist": [
+     {
+      "team": "SWE",
+      "p": 1.0
+     }
+    ],
+    "winner_dist": [
+     {
+      "team": "FRA",
+      "p": 0.7797
+     },
+     {
+      "team": "SWE",
+      "p": 0.2203
+     }
+    ]
+   },
+   {
+    "match": 78,
+    "date": "2026-06-30",
+    "venue": "att",
+    "home_slot": {
+     "type": "R",
+     "group": "E"
+    },
+    "away_slot": {
+     "type": "R",
+     "group": "I"
+    },
+    "home_dist": [
+     {
+      "team": "CIV",
+      "p": 1.0
+     }
+    ],
+    "away_dist": [
+     {
+      "team": "NOR",
+      "p": 1.0
+     }
+    ],
+    "winner_dist": [
+     {
+      "team": "NOR",
+      "p": 0.6259
+     },
+     {
+      "team": "CIV",
+      "p": 0.3741
+     }
+    ]
+   },
+   {
+    "match": 79,
+    "date": "2026-06-30",
+    "venue": "azteca",
+    "home_slot": {
+     "type": "W",
+     "group": "A"
+    },
+    "away_slot": {
+     "type": "T",
+     "allowed": [
+      "C",
+      "E",
+      "F",
+      "H",
+      "I"
+     ]
+    },
+    "home_dist": [
+     {
+      "team": "MEX",
+      "p": 1.0
+     }
+    ],
+    "away_dist": [
+     {
+      "team": "ECU",
+      "p": 1.0
+     }
+    ],
+    "winner_dist": [
+     {
+      "team": "MEX",
+      "p": 0.5777
+     },
+     {
+      "team": "ECU",
+      "p": 0.4223
+     }
+    ]
+   },
+   {
+    "match": 80,
+    "date": "2026-07-01",
+    "venue": "mercedesbenz",
+    "home_slot": {
+     "type": "W",
+     "group": "L"
+    },
+    "away_slot": {
+     "type": "T",
+     "allowed": [
+      "E",
+      "H",
+      "I",
+      "J",
+      "K"
+     ]
+    },
+    "home_dist": [
+     {
+      "team": "ENG",
+      "p": 1.0
+     }
+    ],
+    "away_dist": [
+     {
+      "team": "COD",
+      "p": 1.0
+     }
+    ],
+    "winner_dist": [
+     {
+      "team": "ENG",
+      "p": 0.7359
+     },
+     {
+      "team": "COD",
+      "p": 0.2641
+     }
+    ]
+   },
+   {
+    "match": 81,
+    "date": "2026-07-01",
+    "venue": "levis",
+    "home_slot": {
+     "type": "W",
+     "group": "D"
+    },
+    "away_slot": {
+     "type": "T",
+     "allowed": [
+      "B",
+      "E",
+      "F",
+      "I",
+      "J"
+     ]
+    },
+    "home_dist": [
+     {
+      "team": "USA",
+      "p": 1.0
+     }
+    ],
+    "away_dist": [
+     {
+      "team": "BIH",
+      "p": 1.0
+     }
+    ],
+    "winner_dist": [
+     {
+      "team": "USA",
+      "p": 0.681
+     },
+     {
+      "team": "BIH",
+      "p": 0.319
+     }
+    ]
+   },
+   {
+    "match": 82,
+    "date": "2026-07-01",
+    "venue": "lumen",
+    "home_slot": {
+     "type": "W",
+     "group": "G"
+    },
+    "away_slot": {
+     "type": "T",
+     "allowed": [
+      "A",
+      "E",
+      "H",
+      "I",
+      "J"
+     ]
+    },
+    "home_dist": [
+     {
+      "team": "BEL",
+      "p": 1.0
+     }
+    ],
+    "away_dist": [
+     {
+      "team": "SEN",
+      "p": 1.0
+     }
+    ],
+    "winner_dist": [
+     {
+      "team": "BEL",
+      "p": 0.5314
+     },
+     {
+      "team": "SEN",
+      "p": 0.4686
+     }
+    ]
+   },
+   {
+    "match": 83,
+    "date": "2026-07-02",
+    "venue": "bmo",
+    "home_slot": {
+     "type": "R",
+     "group": "K"
+    },
+    "away_slot": {
+     "type": "R",
+     "group": "L"
+    },
+    "home_dist": [
+     {
+      "team": "POR",
+      "p": 1.0
+     }
+    ],
+    "away_dist": [
+     {
+      "team": "CRO",
+      "p": 1.0
+     }
+    ],
+    "winner_dist": [
+     {
+      "team": "POR",
+      "p": 0.5735
+     },
+     {
+      "team": "CRO",
+      "p": 0.4265
+     }
+    ]
+   },
+   {
+    "match": 84,
+    "date": "2026-07-02",
+    "venue": "sofi",
+    "home_slot": {
+     "type": "W",
+     "group": "H"
+    },
+    "away_slot": {
+     "type": "R",
+     "group": "J"
+    },
+    "home_dist": [
+     {
+      "team": "ESP",
+      "p": 1.0
+     }
+    ],
+    "away_dist": [
+     {
+      "team": "AUT",
+      "p": 1.0
+     }
+    ],
+    "winner_dist": [
+     {
+      "team": "ESP",
+      "p": 0.7249
+     },
+     {
+      "team": "AUT",
+      "p": 0.2751
+     }
+    ]
+   },
+   {
+    "match": 85,
+    "date": "2026-07-02",
+    "venue": "bcplace",
+    "home_slot": {
+     "type": "W",
+     "group": "B"
+    },
+    "away_slot": {
+     "type": "T",
+     "allowed": [
+      "E",
+      "F",
+      "G",
+      "I",
+      "J"
+     ]
+    },
+    "home_dist": [
+     {
+      "team": "SUI",
+      "p": 1.0
+     }
+    ],
+    "away_dist": [
+     {
+      "team": "ALG",
+      "p": 1.0
+     }
+    ],
+    "winner_dist": [
+     {
+      "team": "SUI",
+      "p": 0.5996
+     },
+     {
+      "team": "ALG",
+      "p": 0.4004
+     }
+    ]
+   },
+   {
+    "match": 86,
+    "date": "2026-07-03",
+    "venue": "hardrock",
+    "home_slot": {
+     "type": "W",
+     "group": "J"
+    },
+    "away_slot": {
+     "type": "R",
+     "group": "H"
+    },
+    "home_dist": [
+     {
+      "team": "ARG",
+      "p": 1.0
+     }
+    ],
+    "away_dist": [
+     {
+      "team": "CPV",
+      "p": 1.0
+     }
+    ],
+    "winner_dist": [
+     {
+      "team": "ARG",
+      "p": 0.8641
+     },
+     {
+      "team": "CPV",
+      "p": 0.1359
+     }
+    ]
+   },
+   {
+    "match": 87,
+    "date": "2026-07-03",
+    "venue": "arrowhead",
+    "home_slot": {
+     "type": "W",
+     "group": "K"
+    },
+    "away_slot": {
+     "type": "T",
+     "allowed": [
+      "D",
+      "E",
+      "I",
+      "J",
+      "L"
+     ]
+    },
+    "home_dist": [
+     {
+      "team": "COL",
+      "p": 1.0
+     }
+    ],
+    "away_dist": [
+     {
+      "team": "GHA",
+      "p": 1.0
+     }
+    ],
+    "winner_dist": [
+     {
+      "team": "COL",
+      "p": 0.808
+     },
+     {
+      "team": "GHA",
+      "p": 0.192
+     }
+    ]
+   },
+   {
+    "match": 88,
+    "date": "2026-07-03",
+    "venue": "att",
+    "home_slot": {
+     "type": "R",
+     "group": "D"
+    },
+    "away_slot": {
+     "type": "R",
+     "group": "G"
+    },
+    "home_dist": [
+     {
+      "team": "AUS",
+      "p": 1.0
+     }
+    ],
+    "away_dist": [
+     {
+      "team": "EGY",
+      "p": 1.0
+     }
+    ],
+    "winner_dist": [
+     {
+      "team": "AUS",
+      "p": 0.5385
+     },
+     {
+      "team": "EGY",
+      "p": 0.4615
+     }
+    ]
+   }
+  ],
+  "r16": [
+   {
+    "match": 89,
+    "date": "2026-07-04",
+    "venue": "lincoln",
+    "feeders": [
+     74,
+     77
+    ],
+    "winner_dist": [
+     {
+      "team": "FRA",
+      "p": 0.5485
+     },
+     {
+      "team": "GER",
+      "p": 0.232
+     },
+     {
+      "team": "PAR",
+      "p": 0.1327
+     },
+     {
+      "team": "SWE",
+      "p": 0.0868
+     }
+    ]
+   },
+   {
+    "match": 90,
+    "date": "2026-07-04",
+    "venue": "nrg",
+    "feeders": [
+     73,
+     75
+    ],
+    "winner_dist": [
+     {
+      "team": "NED",
+      "p": 0.4262
+     },
+     {
+      "team": "MAR",
+      "p": 0.2748
+     },
+     {
+      "team": "CAN",
+      "p": 0.2108
+     },
+     {
+      "team": "RSA",
+      "p": 0.0882
+     }
+    ]
+   },
+   {
+    "match": 91,
+    "date": "2026-07-05",
+    "venue": "metlife",
+    "feeders": [
+     76,
+     78
+    ],
+    "winner_dist": [
+     {
+      "team": "BRA",
+      "p": 0.3608
+     },
+     {
+      "team": "NOR",
+      "p": 0.2823
+     },
+     {
+      "team": "JPN",
+      "p": 0.2309
+     },
+     {
+      "team": "CIV",
+      "p": 0.126
+     }
+    ]
+   },
+   {
+    "match": 92,
+    "date": "2026-07-05",
+    "venue": "azteca",
+    "feeders": [
+     79,
+     80
+    ],
+    "winner_dist": [
+     {
+      "team": "ENG",
+      "p": 0.4031
+     },
+     {
+      "team": "MEX",
+      "p": 0.3184
+     },
+     {
+      "team": "ECU",
+      "p": 0.2014
+     },
+     {
+      "team": "COD",
+      "p": 0.0771
+     }
+    ]
+   },
+   {
+    "match": 93,
+    "date": "2026-07-06",
+    "venue": "att",
+    "feeders": [
+     83,
+     84
+    ],
+    "winner_dist": [
+     {
+      "team": "ESP",
+      "p": 0.4641
+     },
+     {
+      "team": "POR",
+      "p": 0.2589
+     },
+     {
+      "team": "CRO",
+      "p": 0.1643
+     },
+     {
+      "team": "AUT",
+      "p": 0.1127
+     }
+    ]
+   },
+   {
+    "match": 94,
+    "date": "2026-07-06",
+    "venue": "lumen",
+    "feeders": [
+     81,
+     82
+    ],
+    "winner_dist": [
+     {
+      "team": "USA",
+      "p": 0.3425
+     },
+     {
+      "team": "BEL",
+      "p": 0.3016
+     },
+     {
+      "team": "SEN",
+      "p": 0.2513
+     },
+     {
+      "team": "BIH",
+      "p": 0.1046
+     }
+    ]
+   },
+   {
+    "match": 95,
+    "date": "2026-07-07",
+    "venue": "mercedesbenz",
+    "feeders": [
+     86,
+     88
+    ],
+    "winner_dist": [
+     {
+      "team": "ARG",
+      "p": 0.6675
+     },
+     {
+      "team": "AUS",
+      "p": 0.1591
+     },
+     {
+      "team": "EGY",
+      "p": 0.1208
+     },
+     {
+      "team": "CPV",
+      "p": 0.0526
+     }
+    ]
+   },
+   {
+    "match": 96,
+    "date": "2026-07-07",
+    "venue": "bcplace",
+    "feeders": [
+     85,
+     87
+    ],
+    "winner_dist": [
+     {
+      "team": "COL",
+      "p": 0.4871
+     },
+     {
+      "team": "SUI",
+      "p": 0.2993
+     },
+     {
+      "team": "ALG",
+      "p": 0.1589
+     },
+     {
+      "team": "GHA",
+      "p": 0.0547
+     }
+    ]
+   }
+  ],
+  "qf": [
+   {
+    "match": 97,
+    "date": "2026-07-09",
+    "venue": "gillette",
+    "feeders": [
+     89,
+     90
+    ],
+    "winner_dist": [
+     {
+      "team": "FRA",
+      "p": 0.3853
+     },
+     {
+      "team": "NED",
+      "p": 0.2029
+     },
+     {
+      "team": "GER",
+      "p": 0.1249
+     },
+     {
+      "team": "MAR",
+      "p": 0.1106
+     },
+     {
+      "team": "CAN",
+      "p": 0.0619
+     },
+     {
+      "team": "PAR",
+      "p": 0.0609
+     }
+    ]
+   },
+   {
+    "match": 98,
+    "date": "2026-07-10",
+    "venue": "sofi",
+    "feeders": [
+     93,
+     94
+    ],
+    "winner_dist": [
+     {
+      "team": "ESP",
+      "p": 0.3349
+     },
+     {
+      "team": "POR",
+      "p": 0.1606
+     },
+     {
+      "team": "USA",
+      "p": 0.1282
+     },
+     {
+      "team": "BEL",
+      "p": 0.1179
+     },
+     {
+      "team": "CRO",
+      "p": 0.0891
+     },
+     {
+      "team": "SEN",
+      "p": 0.0888
+     }
+    ]
+   },
+   {
+    "match": 99,
+    "date": "2026-07-11",
+    "venue": "hardrock",
+    "feeders": [
+     91,
+     92
+    ],
+    "winner_dist": [
+     {
+      "team": "ENG",
+      "p": 0.2368
+     },
+     {
+      "team": "BRA",
+      "p": 0.1996
+     },
+     {
+      "team": "MEX",
+      "p": 0.1575
+     },
+     {
+      "team": "NOR",
+      "p": 0.1349
+     },
+     {
+      "team": "JPN",
+      "p": 0.1097
+     },
+     {
+      "team": "ECU",
+      "p": 0.0917
+     }
+    ]
+   },
+   {
+    "match": 100,
+    "date": "2026-07-11",
+    "venue": "arrowhead",
+    "feeders": [
+     95,
+     96
+    ],
+    "winner_dist": [
+     {
+      "team": "ARG",
+      "p": 0.4561
+     },
+     {
+      "team": "COL",
+      "p": 0.2367
+     },
+     {
+      "team": "SUI",
+      "p": 0.1226
+     },
+     {
+      "team": "AUS",
+      "p": 0.0631
+     },
+     {
+      "team": "ALG",
+      "p": 0.0508
+     },
+     {
+      "team": "EGY",
+      "p": 0.0459
+     }
+    ]
+   }
+  ],
+  "sf": [
+   {
+    "match": 101,
+    "date": "2026-07-14",
+    "venue": "att",
+    "feeders": [
+     97,
+     98
+    ],
+    "winner_dist": [
+     {
+      "team": "FRA",
+      "p": 0.2404
+     },
+     {
+      "team": "ESP",
+      "p": 0.2059
+     },
+     {
+      "team": "NED",
+      "p": 0.1062
+     },
+     {
+      "team": "POR",
+      "p": 0.0793
+     },
+     {
+      "team": "GER",
+      "p": 0.056
+     },
+     {
+      "team": "USA",
+      "p": 0.0538
+     }
+    ]
+   },
+   {
+    "match": 102,
+    "date": "2026-07-15",
+    "venue": "mercedesbenz",
+    "feeders": [
+     99,
+     100
+    ],
+    "winner_dist": [
+     {
+      "team": "ARG",
+      "p": 0.2936
+     },
+     {
+      "team": "COL",
+      "p": 0.1287
+     },
+     {
+      "team": "ENG",
+      "p": 0.1225
+     },
+     {
+      "team": "BRA",
+      "p": 0.0988
+     },
+     {
+      "team": "MEX",
+      "p": 0.0701
+     },
+     {
+      "team": "SUI",
+      "p": 0.0584
+     }
+    ]
+   }
+  ],
+  "final": {
+   "match": 104,
+   "date": "2026-07-19",
+   "venue": "metlife",
+   "winner_dist": [
+    {
+     "team": "ARG",
+     "p": 0.1793
+    },
+    {
+     "team": "FRA",
+     "p": 0.1444
+    },
+    {
+     "team": "ESP",
+     "p": 0.1248
+    },
+    {
+     "team": "ENG",
+     "p": 0.0642
+    },
+    {
+     "team": "COL",
+     "p": 0.064
+    },
+    {
+     "team": "NED",
+     "p": 0.0514
+    },
+    {
+     "team": "BRA",
+     "p": 0.0502
+    },
+    {
+     "team": "POR",
+     "p": 0.0388
+    },
+    {
+     "team": "MEX",
+     "p": 0.0299
+    },
+    {
+     "team": "SUI",
+     "p": 0.0252
+    },
+    {
+     "team": "NOR",
+     "p": 0.0249
+    },
+    {
+     "team": "GER",
+     "p": 0.0236
+    }
+   ]
+  }
+ },
+ "market": {
+  "fetched_at": "2026-07-02T07:51:18.401550+00:00",
+  "implied": {
+   "FRA": 0.330000878034931,
+   "ARG": 0.1788004757352899,
+   "ESP": 0.10689158875479288,
+   "ENG": 0.08940023786764495,
+   "BRA": 0.07024304403886389,
+   "POR": 0.053156898191572675,
+   "MEX": 0.028923606368943953,
+   "USA": 0.02587901622484459,
+   "MAR": 0.027316739348447066,
+   "COL": 0.027316739348447066,
+   "BEL": 0.017880047573528988,
+   "NOR": 0.01966805233088189,
+   "SUI": 0.00819502180453412,
+   "CRO": 0.0033910435053244635,
+   "CAN": 0.0021853391478757656,
+   "PAR": 0.0018554766349888575,
+   "EGY": 0.0018211159565631378,
+   "ALG": 0.001214077304375425,
+   "AUS": 0.001639004360906824,
+   "AUT": 0.0017252677483229728,
+   "GHA": 0.0015129271023755298,
+   "CPV": 0.0009834026165440944
+  }
+ },
+ "blend": {
+  "n_matches": 0,
+  "weight": 0.65,
+  "fetched_at": "2026-07-02T07:51:16.152714+00:00"
+ }
+}
